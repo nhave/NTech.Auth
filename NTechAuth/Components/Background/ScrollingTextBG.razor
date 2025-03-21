@@ -1,0 +1,73 @@
+﻿<div class="nt-scrollbg">
+	<div class="nt-scrollbg-rotated-container">
+		@for (int ul = 0; ul < 6; ul++)
+		{
+			<div class="nt-scrollbg-scrolling-text">
+				<ul class="nt-scrollbg-scroll-list" id="left-list">
+					@for (int li = 0; li < 16; li++)
+					{
+						<li class="nt-scrollbg-scroll-item">@Text</li>
+					}
+				</ul>
+			</div>
+			<div class="nt-scrollbg-scrolling-text">
+				<ul class="nt-scrollbg-scroll-list nt-scrollbg-scroll-list-right">
+					@for (int li = 0; li < 16; li++)
+					{
+						<li class="nt-scrollbg-scroll-item">@Text</li>
+					}
+				</ul>
+			</div>
+		}
+		@for (int ul = 0; ul < 6; ul++)
+		{
+			<div class="nt-scrollbg-scrolling-text nt-scroll-colored" style="color: @Color; background-color: @DarkenHexColor(Color, 0.4);">
+				<ul class="nt-scrollbg-scroll-list" id="left-list">
+					@for (int li = 0; li < 16; li++)
+					{
+						<li class="nt-scrollbg-scroll-item">@Text</li>
+					}
+				</ul>
+			</div>
+			<div class="nt-scrollbg-scrolling-text nt-scroll-colored" style="color: @Color; background-color: @DarkenHexColor(Color, 0.4);">
+				<ul class="nt-scrollbg-scroll-list nt-scrollbg-scroll-list-right">
+					@for (int li = 0; li < 16; li++)
+					{
+						<li class="nt-scrollbg-scroll-item">@Text</li>
+					}
+				</ul>
+			</div>
+		}
+	</div>
+	<div class="nt-scrollbg-cover-full nt-scrollbg-point-bg"></div>
+	<div class="nt-scrollbg-cover-full nt-scrollbg-gradient-bg"></div>
+</div>
+
+@code {
+	[Parameter]
+	public string Text { get; set; } = "EXAMPLE TEXT";
+	[Parameter]
+	public string Color { get; set; } = "#05777a";
+
+	private string DarkenHexColor(string hex, double factor)
+	{
+		if (hex.StartsWith("#"))
+		{
+			hex = hex.Substring(1);
+		}
+
+		int r = Convert.ToInt32(hex.Substring(0, 2), 16);
+		int g = Convert.ToInt32(hex.Substring(2, 2), 16);
+		int b = Convert.ToInt32(hex.Substring(4, 2), 16);
+
+		r = (int)(r * (1 - factor));
+		g = (int)(g * (1 - factor));
+		b = (int)(b * (1 - factor));
+
+		r = Math.Max(0, Math.Min(255, r));
+		g = Math.Max(0, Math.Min(255, g));
+		b = Math.Max(0, Math.Min(255, b));
+
+		return $"#{r:X2}{g:X2}{b:X2}";
+	}
+}

@@ -1,0 +1,18 @@
+.avatar-img {
+    transition: box-shadow 0.1s ease-in-out;
+    -webkit-user-drag: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .avatar-img {
+        transition: none;
+    }
+}
+
+.nav-item:hover .avatar-img {
+    box-shadow: 0 0 0 .125rem var(--bs-nav-link-hover-color);
+}
+
+.navbar-nav .nav-link.show .avatar-img {
+    box-shadow: 0 0 0 .125rem var(--bs-navbar-active-color);
+}

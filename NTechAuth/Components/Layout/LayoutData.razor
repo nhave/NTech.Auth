@@ -1,0 +1,18 @@
+﻿@using System.Reflection
+
+@if (UseLayout())
+{
+    @ChildContent
+}
+
+@code {
+    [CascadingParameter] private RouteData? routeData { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool UseLayout()
+    {
+        TypeInfo typeInfo = routeData.PageType.GetTypeInfo();
+        var obj = typeInfo.GetCustomAttribute<NoLayoutPage>();
+        return obj is null;
+    }
+}
