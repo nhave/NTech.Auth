@@ -24,6 +24,12 @@
                 <NavLink class="nav-item nav-link" href="weather">
                     <Icon Name="IconName.Table" /> Weather
                 </NavLink>
+                <NavLink class="nav-item nav-link" href="unknownpage">
+                    <Icon Name="IconName.BugFill" /> 404 Debug
+                </NavLink>
+                <NavLink class="nav-item nav-link" href="auth/login-oidc">
+                    <Icon Name="IconName.PersonFillLock" /> OIDC Login
+                </NavLink>
                 <div class="d-sm-none">
                     <div class="nav-item py-2 py-sm-1 col-12 col-sm-auto">
                         <hr class="d-sm-none my-0 text-white-50">
@@ -34,12 +40,12 @@
                             <NavLink class="nav-item nav-link" href="account">
                                 <Icon Name="IconName.PersonCircle" /> Account
                             </NavLink>
-                            <NavLink class="nav-item nav-link" href="api/logout">
+                            <NavLink class="nav-item nav-link" href="auth/logout">
                                 <Icon Name="IconName.BoxArrowLeft" /> Sign out
                             </NavLink>
                         </Authorized>
                         <NotAuthorized>
-                            <NavLink class="nav-item nav-link" href="account/login">
+                            <NavLink class="nav-item nav-link" href="auth/login">
                                 <Icon Name="IconName.PersonCircle" /> Sign in
                             </NavLink>
                         </NotAuthorized>
@@ -64,10 +70,10 @@
                             <Authorized>
                                 <DropdownItem To="account" Type="DropdownItemType.Link">Account</DropdownItem>
                                 <DropdownDivider />
-                                <DropdownItem To="api/logout" Type="DropdownItemType.Link">Sign out</DropdownItem>
+                                <DropdownItem To="auth/logout" Type="DropdownItemType.Link">Sign out</DropdownItem>
                             </Authorized>
                             <NotAuthorized>
-                                <DropdownItem To="account/login" Type="DropdownItemType.Link">Sign in</DropdownItem>
+                                <DropdownItem To="auth/login" Type="DropdownItemType.Link">Sign in</DropdownItem>
                             </NotAuthorized>
                         </AuthorizeView>
                     </DropdownMenu>

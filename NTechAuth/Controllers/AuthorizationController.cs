@@ -5,11 +5,66 @@ using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using NTechAuth.Models.Requests;
+using NTechAuth.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace NTechAuth.Controllers
 {
-    public class AuthorizationController : Controller
+    [ApiController]
+    public class AuthorizationController(ApplicationDbContext context) : Controller
     {
+        [HttpPost("~/api/auth/login")]
+        [AllowAnonymous]
+        public async Task<ActionResult> Login([FromBody] LoginRequestModel model)
+        {
+            if (model.Username == null || model.Password == null)
+            {
+                return BadRequest("Invalid Credentials");
+            }
+
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Email == model.Username || u.Username == model.Username);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
+            {
+                return BadRequest("Invalid Credentials");
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.Id),
+                new Claim("Username", user.Username),
+                new Claim("FirstName", user.FirstName),
+                new Claim("LastName", user.LastName)
+            };
+
+            var userRoles = context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToList();
+            claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+
+            //if (Url.IsLocalUrl(model.ReturnUrl))
+            //{
+            //    return Ok(model.ReturnUrl);
+            //}
+
+            //return Ok("/");
+
+            return Ok(model.ReturnUrl);
+        }
+
+        [HttpGet("~/auth/logout")]
+        public async Task<ActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+
+            return Redirect("/");
+        }
+
         [HttpPost("~/connect/token"), Produces("application/json")]
         public async Task<IActionResult> Exchange()
         {

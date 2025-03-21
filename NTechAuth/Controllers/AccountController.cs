@@ -4,67 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using NTechAuth.Database;
-using NTechAuth.Models.Requests;
-using Microsoft.EntityFrameworkCore;
 using OtpNet;
 using QRCoder;
-using NTechAuth.Components.Images;
-using NTechAuth.Utilities;
 
 namespace NTechAuth.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class AccountController(ApplicationDbContext context, IWebHostEnvironment environment) : Controller
     {
-        [HttpPost("~/api/login")]
-        [AllowAnonymous]
-        public async Task<ActionResult> Login([FromBody] LoginRequestModel model)
-        {
-            if (model.Username == null || model.Password == null)
-            {
-                return BadRequest("Invalid Credentials");
-            }
-
-            var user = await context.Users.FirstOrDefaultAsync(u => u.Email == model.Username || u.Username == model.Username);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
-            {
-                return BadRequest("Invalid Credentials");
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.Id),
-                new Claim("Username", user.Username),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName)
-            };
-
-            var userRoles = context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToList();
-            claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity));
-
-            if (Url.IsLocalUrl(model.ReturnUrl))
-            {
-                return Ok(model.ReturnUrl);
-            }
-
-            return Ok("/");
-        }
-
-        [HttpGet("api/logout")]
-        public async Task<ActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync();
-
-            return Redirect("/");
-        }
-
-        [HttpGet("api/account/GenerateQRCode")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        [HttpGet("GenerateQRCode")]
         public async Task<ActionResult> GenerateQRCode()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -113,7 +63,7 @@ namespace NTechAuth.Controllers
             }
         }
 
-        [HttpPost("api/account/avatar")]
+        [HttpPost("avatar")]
         [Authorize]
         public async Task<ActionResult> UploadAvatar(IFormFile file)
         {
@@ -146,7 +96,7 @@ namespace NTechAuth.Controllers
             return Ok(new { filePath });
         }
 
-        [HttpGet("api/account/avatar")]
+        [HttpGet("avatar")]
         public async Task<ActionResult> GetAvatar([FromQuery] string? userId)
         {
             Console.WriteLine(userId ?? "null");

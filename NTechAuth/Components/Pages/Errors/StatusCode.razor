@@ -1,0 +1,50 @@
+﻿@page "/error/{status:int}"
+@inject NavigationManager NavigationManager
+
+<PageTitle>
+    @if (Status == 404)
+        @($"{Status} Page not Found")
+    else
+        @("Error")
+</PageTitle>
+
+<Card>
+    <CardHeader>
+        <h1 class="text-danger">
+            @if (Status == 404)
+                @($"{Status} - Page not Found.")
+            else
+                @("Error")
+        </h1>
+    </CardHeader>
+    <CardBody>
+        @if (Status == 404)
+        {
+            <h2 class="text-danger-emphasis fst-italic">@NavigationManager.Uri</h2>
+            <a href="/">Go home</a>
+        }
+        else {
+            <h2 class="text-danger">An error occurred while processing your request.</h2>
+        }
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter]
+    public int Status { get; set; }
+
+    private void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+}

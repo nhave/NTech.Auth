@@ -67,7 +67,7 @@ namespace NTechAuth
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                 {
-                    options.LoginPath = "/account/login";
+                    options.LoginPath = "/auth/login-oidc";
                 })
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
@@ -113,6 +113,9 @@ namespace NTechAuth
                     ForwardedHeaders = ForwardedHeaders.XForwardedProto
                 });
             }
+
+            // Allows a status code page work with a layout.
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
 
             app.UseHttpsRedirection();
 

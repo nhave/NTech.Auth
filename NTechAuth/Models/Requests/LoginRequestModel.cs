@@ -10,6 +10,6 @@ namespace NTechAuth.Models.Requests
         [Required(ErrorMessage = "Password is required.")]
         public string Password { get; set; }
 
-        public string ReturnUrl { get; set; }
+        public string? ReturnUrl { get; set; }
     }
 }

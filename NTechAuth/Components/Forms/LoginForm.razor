@@ -1,0 +1,85 @@
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRunTime
+
+<EditForm Model="LoginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+
+    <div Class="card shadow">
+        <div Class="card-header">
+            <h1>Login Page</h1>
+        </div>
+        <div Class="card-body">
+            <div class="mb-3">
+                <label for="loginInputUsername" class="form-label">Username</label>
+                <InputText type="text" @bind-Value="LoginModel.Username" class="form-control" id="loginInputUsername" />
+                <ValidationMessage For="@(() => LoginModel.Username)" />
+            </div>
+            <div class="mb-3">
+                <label for="loginInputPassword" class="form-label">password</label>
+                <InputText type="password" @bind-Value="LoginModel.Password" class="form-control" id="loginInputPassword" />
+                <ValidationMessage For="@(() => LoginModel.Password)" />
+            </div>
+            <div class="validation-message">@errorMessage</div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-center">
+                <Button Type="ButtonType.Submit"
+                Color="spinnerVisible ? ButtonColor.Secondary : ButtonColor.Primary"
+                Loading="spinnerVisible"
+                Disabled="spinnerVisible"
+                LoadingText="Logging in"
+                Style="width: 128px;">
+                    Login
+                </Button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private LoginRequestModel LoginModel = new LoginRequestModel();
+    private bool spinnerVisible = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            if (authState.User.Identity != null && authState.User.Identity.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch { }
+    }
+
+    private async Task HandleLogin()
+    {
+        spinnerVisible = true;
+        using var DotNetReference = DotNetObjectReference.Create(this);
+        var authModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/auth.js");
+        await authModule.InvokeVoidAsync("SignIn", DotNetReference, LoginModel.Username, LoginModel.Password);
+    }
+
+    [JSInvokable]
+    public Task HandleLoginSuccess(string message)
+    {
+        // Console.WriteLine("Success Request (200) received from server!");
+        // Console.WriteLine(message);
+        NavigationManager.NavigateTo(message, true);
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task HandleLoginFailed(string message)
+    {
+        // Console.WriteLine("Bad Request (400) received from server!");
+        // Console.WriteLine(message);
+        spinnerVisible = false;
+        errorMessage = message;
+        return Task.CompletedTask;
+    }
+}

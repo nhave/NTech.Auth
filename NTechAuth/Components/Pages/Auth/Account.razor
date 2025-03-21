@@ -40,7 +40,7 @@
 	</CardBody>
 </Card>
 
-<Modal @ref="imageModal" title="Modal title" IsVerticallyCentered="true" OnShown="OnModalShown" OnHiding="OnModalHiding">
+<Modal @ref="imageModal" title="Change Avatar" IsVerticallyCentered="true" OnShown="OnModalShown" OnHiding="OnModalHiding">
     <BodyTemplate>
         <div class="container-fluid d-flex justify-content-center">
             <div class="img-container" style="height: 256px; width: 256px;">
@@ -58,7 +58,7 @@
         </div>
     </BodyTemplate>
     <FooterTemplate>
-        <Button Color="ButtonColor.Primary" @onclick="OnSaveImageClick">Save</Button>
+        <Button Color="ButtonColor.Primary" @onclick="OnSaveImageClick">Change</Button>
         <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
     </FooterTemplate>
 </Modal>

@@ -11,6 +11,8 @@
 
     private bool UseLayout()
     {
+        if (routeData == null) return true;
+
         TypeInfo typeInfo = routeData.PageType.GetTypeInfo();
         var obj = typeInfo.GetCustomAttribute<NoLayoutPage>();
         return obj is null;
