@@ -1,1 +1,1 @@
-# OpenIddict_Test
+# NTechAuth Open Id Server
