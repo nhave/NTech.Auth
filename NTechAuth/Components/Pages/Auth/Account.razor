@@ -1,105 +1,29 @@
 ﻿@page "/account"
-@using System.Security.Claims
 @attribute [Authorize]
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IJSRuntime JSRunTime
+@inject UserService UserService
 
 <Card>
 	<CardHeader>
-        <AuthorizeView>
-                <Authorized>
-
-                @{
-                    var firstNameClaim = context.User.Claims.FirstOrDefault(c => c.Type == "FirstName");
-                    var lastNameClaim = context.User.Claims.FirstOrDefault(c => c.Type == "LastName");
-                    var firstName = firstNameClaim != null ? firstNameClaim.Value : string.Empty;
-                    var lastName = lastNameClaim != null ? lastNameClaim.Value : string.Empty;
-
-                    // <h1>Account Settings</h1>
-
-                    <h1>@($"{firstName} {lastName}")</h1>
-                }
-            </Authorized>
-        </AuthorizeView>
+        @if (currentUser != null)
+        {
+            <h1>@($"{currentUser.FirstName} {currentUser.LastName}")</h1>
+        }
 	</CardHeader>
-	<CardBody>
-        <!-- Avatar -->
-        <div class="row">
-            <div class="col-sm-auto d-flex justify-content-center">
-                <label class="btn rounded-circle m-0 p-0 avatar-edit">
-                    <Avatar Size="192" />
-                    <InputFile OnChange="OnImageChange" class="d-none" id="input" accept="image/*" />
-                </label>
-            </div>
-            <div class="col align-self-center">
-                <h3 class="fst-italic mt-3 mt-sm-0">Here you can change your user information.</h3>
-                <p class="text-start fst-italic fw-bold d-none d-sm-block mb-0">To change your avatar, click the image to the left.</p>
-                <p class="text-start fst-italic fw-bold d-block d-sm-none mb-1">To change your avatar, click the image above.</p>
-            </div>
-        </div>
-	</CardBody>
+	<CardBody Class="border-bottom">
+        <AccountAvatar />
+    </CardBody>
+    <CardBody>
+        <MFAModule MFAEnabled="@(currentUser != null && currentUser.IsMfaEnabled)" />
+    </CardBody>
 </Card>
 
-<Modal @ref="imageModal" title="Change Avatar" IsVerticallyCentered="true" OnShown="OnModalShown" OnHiding="OnModalHiding">
-    <BodyTemplate>
-        <div class="container-fluid d-flex justify-content-center">
-            <div class="img-container" style="height: 256px; width: 256px;">
-                <img id="image" src="" class="crop-image">
-                <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-            </div>
-        </div>
-        <div class="container-fluid mt-3">
-            <p class="text-start fw-bold mb-1">How to use:</p>
-            <ul class="list-style">
-                <li>Use the mouse wheel to zoom.</li>
-                <li>Click and drag the image to move.</li>
-                <li class="fst-italic fw-light">(Touch screen supported)</li>
-            </ul>
-        </div>
-    </BodyTemplate>
-    <FooterTemplate>
-        <Button Color="ButtonColor.Primary" @onclick="OnSaveImageClick">Change</Button>
-        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
-    </FooterTemplate>
-</Modal>
+
 
 @code {
-    private Modal imageModal = default!;
-    private IJSObjectReference? avatarModule;
+    private User? currentUser;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/cropperjs/cropper.min.js");
-            avatarModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/avatar.js");
-        }
-    }
-
-    private async Task OnImageChange(InputFileChangeEventArgs evt)
-    {
-        Console.WriteLine(evt.File.Name);
-        await imageModal.ShowAsync();
-    }
-
-    private async Task OnSaveImageClick()
-    {
-        await avatarModule!.InvokeVoidAsync("SaveImage");
-        await imageModal.HideAsync();
-    }
-
-    private async Task OnHideModalClick()
-    {
-        await imageModal.HideAsync();
-    }
-
-    private async Task OnModalShown()
-    {
-        await avatarModule!.InvokeVoidAsync("CreateCropper");
-    }
-
-    private async Task OnModalHiding()
-    {
-        await avatarModule!.InvokeVoidAsync("DestroyCropper");
+        currentUser = await UserService.GetCurrenrUserAsync();
     }
 }

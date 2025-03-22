@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using NTechAuth.Database;
-using OtpNet;
 using QRCoder;
 
 namespace NTechAuth.Controllers
@@ -31,19 +29,18 @@ namespace NTechAuth.Controllers
                 return NotFound("User not found.");
             }
 
+            if (user.MfaSecretKey == null)
+            {
+                return Unauthorized("MFA has not been configured for this account.");
+            }
+
             if (user.IsMfaEnabled)
             {
                 return Unauthorized("MFA has already been enabled on this account.");
             }
 
-            var secretKey = KeyGeneration.GenerateRandomKey(20);
-            var base32Secret = Base32Encoding.ToString(secretKey);
-
-            user.MfaSecretKey = base32Secret;
-            await context.SaveChangesAsync();
-
             // Generer TOTP URI
-            var totpUri = $"otpauth://totp/{user.Email}?secret={base32Secret}&issuer=MyApp";
+            var totpUri = $"otpauth://totp/{user.Email}?secret={user.MfaSecretKey}&issuer=NTechAuth";
 
             // Generer QR-koden ved hjælp af QRCoder
             using (var qrGenerator = new QRCodeGenerator())

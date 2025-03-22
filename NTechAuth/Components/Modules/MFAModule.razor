@@ -1,0 +1,142 @@
+﻿@inject UserService UserService
+@inject IJSRuntime JSRunTime
+
+<div class="row justify-content-center">
+    <div class="col-sm-6">
+        <Card>
+            <CardBody>
+                <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">MFA Modal</Button>
+                <Button Color="ButtonColor.Danger" @onclick="DisableMFA">Disable MFA</Button>
+                <p>@($"MFA Enabled: {MFAEnabled}")</p>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+
+<Modal @ref="modal" Size="ModalSize.Large" title="Enable Multi-Factor Authentication" IsVerticallyCentered="true" UseStaticBackdrop="true" IsScrollable="true" OnHidden="OnModalHidden">
+    <BodyTemplate>
+        @if (mfaStep == 0)
+        {
+            <div class="container-fluid">
+                <div class="row justify-content-center g-3">
+                    <div class="col-8 col-sm-6 col-lg-4">
+                        <div class="img-container ratio ratio-1x1 border rounded-3 overflow-hidden">
+                            <img src="@($"api/account/GenerateQRCode?no-cache={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}")" alt="" />
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="row row-cols-1 h-100">
+                            <div class="col">
+                                <div class="bg-body-tertiary border rounded-3 mb-3 p-2">
+                                    Enhance your account security by enabling Multi-Factor Authentication (MFA). MFA provides an additional layer of protection by requiring a secondary verification method, such as scanning a QR code with an authenticator app. Once set up, you’ll need to confirm your identity using both your password and the authenticator app when logging in. This helps prevent unauthorized access to your account, keeping your data secure.
+                                </div>
+                            </div>
+                            <div class="col align-self-end d-flex justify-content-between">
+                                <div class="d-flex">
+                                    <div class="me-2 align-self-center text-secondary-emphasis">
+                                        Cant use the QR code?
+                                    </div>
+                                    <Button Class="p-0 me-3 btn-icon" @onclick="CopyToClipboard">
+                                        <Icon Class="fs-4" Name="IconName.ClipboardPlusFill" />
+                                    </Button>
+                                </div>
+                                <Button Color="ButtonColor.Primary" @onclick="NextStep">Enable MFA</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (mfaStep == 1)
+        {
+            <div class="row row-cols-1 g-3">
+                <div class="col">
+                    <div class="bg-body-tertiary border rounded-3 p-2">
+                        Enter the key displayed in your authenticator app into the field below and then click 'Confirm' to complete the setup. This step ensures your authenticator is correctly linked to your account.
+                    </div>
+                </div>
+                <div class="col">
+                    <form action="javascript:void(0);">
+                        <div class="row justify-content-end g-2">
+                            <div class="col col-sm-6 col-lg-4">
+                                <TextInput @bind-Value="@totpCode" Placeholder="MFA Key"></TextInput>
+                            </div>
+                            <div class="col-auto">
+                                <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="NextStep">Confirm</Button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (mfaStep == 2)
+        {
+            <div class="row row-cols-1 g-3">
+                <div class="col">
+                    <div class="bg-body-tertiary border rounded-3 p-2">
+                        MFA has been successfully enabled for your account. Your login is now protected with an extra layer of security. Thank you for taking this step to keep your account safe!
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="row justify-content-end g-2">
+                        <div class="col-auto">
+                            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </BodyTemplate>
+</Modal>
+
+@code {
+    [Parameter] public bool MFAEnabled { get; set; }
+    private Modal modal = default!;
+    private int mfaStep = 0;
+    private string? mfaSecret;
+    private string? totpCode { get; set; }
+
+    private async Task OnShowModalClick()
+    {
+        mfaStep = 0;
+        mfaSecret = await UserService.GenerateMFASecretAsync();
+        if (mfaSecret != null) await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+    private void OnModalHidden()
+    {
+        mfaSecret = null;
+    }
+
+    private async Task CopyToClipboard()
+    {
+        var module = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/clipboard.js");
+        await module!.InvokeVoidAsync("CopyToClipboard", mfaSecret);
+    }
+
+    private async Task NextStep()
+    {
+        if (mfaStep == 1)
+        {
+            if (await UserService.EnableMFAAsync(totpCode!))
+            {
+                MFAEnabled = true;
+                mfaStep++;
+            }
+        }
+        else
+        {
+            mfaStep++;
+        }
+    }
+
+    private async Task DisableMFA()
+    {
+        if (await UserService.DisableMFAAsync("")) MFAEnabled = false;
+    }
+}

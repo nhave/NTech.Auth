@@ -11,8 +11,12 @@ body {
     box-shadow: none !important;
 }
 
-.navbar .nav-link, .card-header h1 {
+.navbar .nav-link, .card-header h1, .modal-title {
     font-family: Impact, sans-serif;
+}
+
+.modal-title {
+    letter-spacing: 1px;
 }
 
 .navbar-brand img {
@@ -52,3 +56,13 @@ body {
     --bs-navbar-color: rgba(255, 255, 255, 0.55);
     --bs-navbar-hover-color: rgba(255, 255, 255, 0.75);
 }
+
+.btn-icon {
+    color: var(--bs-secondary-text-emphasis);
+    /*--bs-text-opacity: 1;
+    color: rgba(var(--bs-secondary-rgb), var(--bs-text-opacity))*/
+}
+
+    .btn-icon:hover {
+        color: var(--bs-emphasis-color);
+    }

@@ -31,6 +31,8 @@ namespace NTechAuth
 
             builder.Services.AddControllers();
 
+            builder.Services.AddScoped<UserService>();
+
             builder.Services.AddHostedService<TestData>();
 
             var app = builder.Build();
