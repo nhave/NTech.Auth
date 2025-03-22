@@ -1,8 +1,5 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using NTechAuth.Components;
 using NTechAuth.Database;
 using NTechAuth.Services;
@@ -30,66 +27,7 @@ namespace NTechAuth
                 options.UseOpenIddict();
             });
 
-            builder.Services.AddOpenIddict()
-                // Register the OpenIddict core components.
-                .AddCore(options =>
-                {
-                    // Configure OpenIddict to use the EF Core stores/models.
-                    options.UseEntityFrameworkCore()
-                        .UseDbContext<ApplicationDbContext>();
-                })
-                // Register the OpenIddict server components.
-                .AddServer(options =>
-                {
-                    options.AllowClientCredentialsFlow();
-                    options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
-
-                    options.SetAuthorizationEndpointUris("/connect/authorize")
-                        .SetTokenEndpointUris("/connect/token");
-
-                    options.SetIssuer(new Uri(builder.Configuration["OpenId:Authority"]!));
-
-                    // Encryption and signing of tokens
-                    options.AddEphemeralEncryptionKey()
-                        .AddEphemeralSigningKey();
-                    // Register scopes (permissions)
-                    options.RegisterScopes("api", "avatar");
-                    // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-                    options.UseAspNetCore()
-                        .EnableTokenEndpointPassthrough()
-                        .EnableAuthorizationEndpointPassthrough();
-
-                    // Disable encryption
-                    options.DisableAccessTokenEncryption();
-                });
-
-            builder.Services.AddAuthorization();
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-                {
-                    options.LoginPath = "/auth/login-oidc";
-                })
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-                {
-                    options.Authority = builder.Configuration["OpenId:Authority"]!;
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidIssuer = builder.Configuration["OpenId:Authority"]!,
-                        ClockSkew = TimeSpan.Zero
-                    };
-                    //options.Events = new JwtBearerEvents
-                    //{
-                    //    OnTokenValidated = context =>
-                    //    {
-                    //        Console.WriteLine("Token validated with Bearer.");
-                    //        return Task.CompletedTask;
-                    //    }
-                    //};
-                });
+            builder.Services.AddOpenIddictWithAuth(builder.Configuration);
 
             builder.Services.AddControllers();
 

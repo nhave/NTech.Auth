@@ -34,10 +34,11 @@ namespace NTechAuth.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.Id),
-                new Claim("Username", user.Username),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName)
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+                new Claim(ClaimTypes.Email, user.Email),
+                //new Claim("Username", user.Username),
+                //new Claim("FirstName", user.FirstName),
+                //new Claim("LastName", user.LastName)
             };
 
             var userRoles = context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToList();
@@ -93,6 +94,11 @@ namespace NTechAuth.Controllers
             else if (request.IsAuthorizationCodeGrantType())
             {
                 // Retrieve the claims principal stored in the authorization code
+                claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal!;
+            }
+            else if (request.IsRefreshTokenGrantType())
+            {
+                // Retrieve the claims principal stored in the refresh token.
                 claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
             }
             else
@@ -101,7 +107,7 @@ namespace NTechAuth.Controllers
             }
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
-            return SignIn(claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            return SignIn(claimsPrincipal!, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
         [HttpGet("~/connect/authorize")]
@@ -131,8 +137,10 @@ namespace NTechAuth.Controllers
             {
                 // 'subject' claim which is required
                 //new Claim(OpenIddictConstants.Claims.Subject, result.Principal.Identity.Name),
-                new Claim(OpenIddictConstants.Claims.Subject, result.Principal.Identity.Name),
-                new Claim("some claim", "some value").SetDestinations(OpenIddictConstants.Destinations.AccessToken)
+                new Claim(OpenIddictConstants.Claims.Subject, result.Principal.GetClaim(ClaimTypes.NameIdentifier)!),
+                new Claim("some claim", "some value").SetDestinations(OpenIddictConstants.Destinations.AccessToken),
+                new Claim(OpenIddictConstants.Claims.Name, result.Principal.GetClaim(ClaimTypes.Name)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken),
+                new Claim(OpenIddictConstants.Claims.Email, result.Principal.GetClaim(ClaimTypes.Email)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -144,6 +152,36 @@ namespace NTechAuth.Controllers
 
             // Signing in with the OpenIddict authentiction scheme trigger OpenIddict to issue a code (which can be exchanged for an access token)
             return SignIn(claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        [Authorize(AuthenticationSchemes = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)]
+        [HttpGet("~/connect/userinfo")]
+        public async Task<IActionResult> Userinfo()
+        {
+            var claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
+
+            var userId = claimsPrincipal!.GetClaim(OpenIddictConstants.Claims.Subject);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.FirstName,
+                user.LastName
+            });
         }
     }
 }

@@ -12,8 +12,8 @@
 
         // MFA-Section
         public bool IsMfaEnabled { get; set; }
-        public string MfaSecretKey { get; set; }
+        public string? MfaSecretKey { get; set; }
         public DateTime? MfaSetupDate { get; set; }
-        public string MfaBackupCodes { get; set; }
+        public string? MfaBackupCodes { get; set; }
     }
 }
