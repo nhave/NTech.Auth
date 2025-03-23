@@ -32,13 +32,21 @@
 
     public async Task Open()
     {
-        var navModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/navbar.js");
-        await navModule.InvokeVoidAsync("openCollapse", Id);
+        try
+        {
+            var navModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/navbar.js");
+            await navModule.InvokeVoidAsync("openCollapse", Id);
+        }
+        catch (Exception e) { }
     }
 
     public async Task Close()
     {
-        var navModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/navbar.js");
-        await navModule.InvokeVoidAsync("closeCollapse", Id);
+        try
+        {
+            var navModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/navbar.js");
+            await navModule.InvokeVoidAsync("closeCollapse", Id);
+        }
+        catch (Exception e) { }
     }
 }
