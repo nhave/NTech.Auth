@@ -2,7 +2,7 @@
     try {
         const url = new URL(window.location.href);
         const params = new URLSearchParams(url.search);
-        const returnUrl = params.get("ReturnUrl");
+        loginModel.ReturnUrl = params.get("ReturnUrl");
 
         const response = await fetch("/api/auth/login", {
             method: "POST",
