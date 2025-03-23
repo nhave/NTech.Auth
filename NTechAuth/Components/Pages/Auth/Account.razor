@@ -2,22 +2,24 @@
 @attribute [Authorize]
 @inject UserService UserService
 
-<Card>
-	<CardHeader>
-        @if (currentUser != null)
-        {
-            <h1>@($"{currentUser.FirstName} {currentUser.LastName}")</h1>
-        }
-	</CardHeader>
-	<CardBody Class="border-bottom">
-        <AccountAvatar />
-    </CardBody>
-    <CardBody>
-        <MFAModule MFAEnabled="@(currentUser != null && currentUser.IsMfaEnabled)" />
-    </CardBody>
-</Card>
-
-
+<div class="row justify-content-center">
+    <div class="col col-sm-11 col-md-10 col-lg-9 col-xl-8">
+        <Card>
+            <CardHeader>
+                @if (currentUser != null)
+                {
+                    <h1>@($"{currentUser.FirstName} {currentUser.LastName}")</h1>
+                }
+            </CardHeader>
+            <CardBody Class="border-bottom">
+                <AccountAvatar />
+            </CardBody>
+            <CardBody>
+                <MFAModule MFAEnabled="@(currentUser != null && currentUser.IsMfaEnabled)" />
+            </CardBody>
+        </Card>
+    </div>
+</div>
 
 @code {
     private User? currentUser;

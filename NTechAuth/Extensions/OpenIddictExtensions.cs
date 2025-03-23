@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using NTechAuth.Database;
+using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -31,9 +34,12 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.SetIssuer(new Uri(configuration["OpenId:Authority"]!));
 
                     // Encryption and signing of tokens
-                    options
-                        .AddEphemeralEncryptionKey()
+                    options.AddEncryptionKey(new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(configuration["OpenId:EncryptionKey"]!)))
                         .AddEphemeralSigningKey();
+                    //    .AddEphemeralEncryptionKey()
+                    //    .AddEphemeralSigningKey();
+
 
                     // Register scopes (permissions)
                     options.RegisterScopes("api", "avatar");
@@ -46,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         .EnableUserInfoEndpointPassthrough();
 
                     // Disable encryption
-                    options.DisableAccessTokenEncryption();
+                    //options.DisableAccessTokenEncryption();
                 });
 
             services.AddAuthorization();
@@ -54,29 +60,25 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                 {
                     options.LoginPath = "/auth/login-oidc";
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                    options.SlidingExpiration = true;
+                })
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+                {
+                    options.Authority = configuration["OpenId:Authority"]!;
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        TokenDecryptionKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(configuration["OpenId:EncryptionKey"]!)),
+                        ValidateIssuer = true,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidIssuer = configuration["OpenId:Authority"]!,
+                        ClockSkew = TimeSpan.Zero
+                    };
                 });
-
-            //.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            //{
-            //    options.Authority = builder.Configuration["OpenId:Authority"]!;
-            //    options.RequireHttpsMetadata = false;
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = true,
-            //        ValidateAudience = false,
-            //        ValidateLifetime = true,
-            //        ValidIssuer = builder.Configuration["OpenId:Authority"]!,
-            //        ClockSkew = TimeSpan.Zero
-            //    };
-            //    //options.Events = new JwtBearerEvents
-            //    //{
-            //    //    OnTokenValidated = context =>
-            //    //    {
-            //    //        Console.WriteLine("Token validated with Bearer.");
-            //    //        return Task.CompletedTask;
-            //    //    }
-            //    //};
-            //});
 
             return services;
         }

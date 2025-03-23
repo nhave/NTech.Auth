@@ -15,6 +15,18 @@ namespace NTechAuth.Controllers
     public class TestController : ControllerBase
     {
         [HttpGet]
+        [Route("test")]
+        public async Task<IActionResult> Test()
+        {
+            var scopeClaim = HttpContext.User.Claims
+                .FirstOrDefault(c => c.Type == "scope")?.Value;
+            var userScopes = scopeClaim.Split(' ');
+
+
+            return Ok(userScopes);
+        }
+
+        [HttpGet]
         [Route("profile")]
         public async Task<IActionResult> GetProfileAsync()
         {
@@ -27,8 +39,12 @@ namespace NTechAuth.Controllers
             // Hvis brugeren er autentificeret via en access token
             if (User.Identity.IsAuthenticated)
             {
+                var scopeClaim = HttpContext.User.Claims
+                .FirstOrDefault(c => c.Type == "scope")?.Value;
+                var userScopes = scopeClaim.Split(' ');
+
                 // Kontrollér for scopen 'avatar'
-                if (User.HasClaim("scope", "avatar"))
+                if (userScopes.Contains("avatar"))
                 {
                     var claims = new List<string>();
                     foreach (var claim in User.Claims)

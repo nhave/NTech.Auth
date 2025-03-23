@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NTechAuth.Database;
 using NTechAuth.Models.Database;
+using NTechAuth.Models.Requests;
 using OtpNet;
 using System.Reflection.Emit;
 using System.Security.Claims;
@@ -30,6 +31,17 @@ namespace NTechAuth.Services
             }
 
             return null;
+        }
+
+        public async Task<User?> ValidateLoginAsync(LoginRequestModel LoginModel)
+        {
+            if (LoginModel.Username == null || LoginModel.Password == null) return null;
+
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Email == LoginModel.Username || u.Username == LoginModel.Username);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(LoginModel.Password, user.Password)) return null;
+
+            return user;
         }
 
         public async Task<string?> GenerateMFASecretAsync()
@@ -75,7 +87,7 @@ namespace NTechAuth.Services
             return true;
         }
 
-        private bool VerifyTotp(string secretKey, string totpCode)
+        public bool VerifyTotp(string secretKey, string totpCode)
         {
             if (secretKey == null || totpCode == null) return false;
             var totp = new Totp(Base32Encoding.ToBytes(secretKey));

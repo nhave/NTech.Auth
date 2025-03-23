@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Authorization;
 using NTechAuth.Models.Requests;
 using NTechAuth.Database;
 using Microsoft.EntityFrameworkCore;
+using NTechAuth.Services;
 
 namespace NTechAuth.Controllers
 {
     [ApiController]
-    public class AuthorizationController(ApplicationDbContext context) : Controller
+    public class AuthorizationController(ApplicationDbContext context, UserService userService) : Controller
     {
         [HttpPost("~/api/auth/login")]
         [AllowAnonymous]
@@ -31,14 +32,16 @@ namespace NTechAuth.Controllers
                 return BadRequest("Invalid Credentials");
             }
 
+            if (user.IsMfaEnabled && !userService.VerifyTotp(user.MfaSecretKey!, model.totpCode!))
+            {
+                return BadRequest("incorrect Totp Code");
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim(ClaimTypes.Email, user.Email),
-                //new Claim("Username", user.Username),
-                //new Claim("FirstName", user.FirstName),
-                //new Claim("LastName", user.LastName)
+                new Claim(ClaimTypes.Email, user.Email)
             };
 
             var userRoles = context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToList();
@@ -46,14 +49,12 @@ namespace NTechAuth.Controllers
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+            var authProperties = new AuthenticationProperties()
+            {
+                IsPersistent = model.RememberMe
+            };
 
-            //if (Url.IsLocalUrl(model.ReturnUrl))
-            //{
-            //    return Ok(model.ReturnUrl);
-            //}
-
-            //return Ok("/");
+            await HttpContext.SignInAsync(new ClaimsPrincipal(claimsIdentity), authProperties);
 
             return Ok(model.ReturnUrl);
         }

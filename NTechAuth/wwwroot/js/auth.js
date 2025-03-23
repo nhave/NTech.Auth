@@ -1,4 +1,4 @@
-﻿export async function SignIn(dotNetReference, username, password) {
+﻿export async function SignIn(dotNetReference, loginModel) {
     try {
         const url = new URL(window.location.href);
         const params = new URLSearchParams(url.search);
@@ -11,11 +11,7 @@
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8'
             },
-            body: JSON.stringify({
-                username: username,
-                password: password,
-                returnUrl: returnUrl
-            })
+            body: JSON.stringify(loginModel)
         });
 
         const message = await response.text();
@@ -28,6 +24,6 @@
         }
     }
     catch {
-        dotNetReference.invokeMethodAsync('HandleLoginFailed');
+        dotNetReference.invokeMethodAsync('HandleLoginFailed', null);
     }
 }

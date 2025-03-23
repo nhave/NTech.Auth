@@ -1,0 +1,172 @@
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+@inject IJSRuntime JSRunTime
+
+@if (loginStep == 0)
+{
+    <EditForm Model="loginModel" OnValidSubmit="AttemptLogin">
+        <DataAnnotationsValidator />
+
+        <Card Class="shadow">
+            <CardHeader>
+                <h1>Login</h1>
+            </CardHeader>
+            <CardBody>
+                <div class="row row-cols-1 g-3">
+                    <div class="col">
+                        <label for="loginInputUsername" class="form-label">Username</label>
+                        <TextInput type="text" @bind-Value="loginModel.Username" id="loginInputUsername" />
+                        <ValidationMessage For="@(() => loginModel.Username)" />
+                    </div>
+                    <div class="col">
+                        <label for="loginInputPassword" class="form-label">password</label>
+                        <TextInput type="password" @bind-Value="loginModel.Password" id="loginInputPassword" />
+                        <ValidationMessage For="@(() => loginModel.Password)" />
+                    </div>
+                    <div class="col">
+                        <CheckboxInput Label="Remember me" @bind-Value="loginModel.RememberMe" />
+                    </div>
+                    @if (errorMessage != null)
+                    {
+                        <div class="col validation-message">@errorMessage</div>
+                    }
+                </div>
+            </CardBody>
+            <CardFooter>
+                <div class="d-flex justify-content-center">
+                    <Button Type="ButtonType.Submit"
+                    Color="spinnerVisible ? ButtonColor.Secondary : ButtonColor.Primary"
+                    Loading="spinnerVisible"
+                    Disabled="spinnerVisible"
+                    LoadingText="Logging in"
+                    Style="width: 128px;">
+                        Login
+                    </Button>
+                </div>
+            </CardFooter>
+        </Card>
+    </EditForm>
+}
+else if (loginStep == 1)
+{
+    <EditForm Model="loginModel" OnValidSubmit="ValidateMFA">
+        <Card Class="shadow">
+            <CardHeader>
+                <h1>Multi-Factor Authentication</h1>
+            </CardHeader>
+            <CardBody>
+                <div class="row row-cols-1 g-3">
+                    <div class="col">
+                        <div class="bg-body-tertiary border rounded-3 p-2">
+                            To complete your login, please open your authenticator app and enter the verification code displayed. This ensures a secure connection to your account. Once you've entered the code, click 'Verify' to proceed.
+                        </div>
+                    </div>
+                    @if (errorMessage !=null)
+                    {
+                        <div class="col validation-message">@errorMessage</div>
+                    }
+                </div>
+            </CardBody>
+            <CardFooter>
+                <div class="row justify-content-center gy-3 gx-2">
+                    <div class="col col-sm-8 col-md-7 col-lg-6">
+                        <TextInput TValue="string?" @bind-Value="loginModel.totpCode" Placeholder="MFA Key" />
+                    </div>
+                    <div class="col-auto">
+                        <Button Type="ButtonType.Submit"
+                                Color="spinnerVisible ? ButtonColor.Secondary : ButtonColor.Primary"
+                                Loading="spinnerVisible"
+                                Disabled="spinnerVisible"
+                                LoadingText="Verifying"
+                                Style="width: 136px;">
+                            Verify
+                        </Button>
+                    </div>
+                </div>
+            </CardFooter>
+        </Card>
+    </EditForm>
+}
+
+@code {
+    private LoginRequestModel loginModel = new LoginRequestModel();
+    private User? user;
+    private bool spinnerVisible = false;
+    private string? errorMessage;
+    private int loginStep = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            if (authState.User.Identity != null && authState.User.Identity.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch { }
+    }
+
+    private async Task AttemptLogin()
+    {
+        spinnerVisible = true;
+        user = await UserService.ValidateLoginAsync(loginModel);
+        if (user != null)
+        {
+            if (user.IsMfaEnabled)
+            {
+                errorMessage = null;
+                loginStep++;
+            }
+            else
+            {
+                await HandleLogin();
+            }
+        }
+        else
+        {
+            errorMessage = "Invalid Credentials.";
+        }
+        spinnerVisible = false;
+    }
+
+    private async Task ValidateMFA()
+    {
+        spinnerVisible = true;
+        if (UserService.VerifyTotp(user!.MfaSecretKey!, loginModel!.totpCode!))
+        {
+            await HandleLogin();
+        }
+        else
+        {
+            errorMessage = "The code you entered is incorrect. Please try again.";
+            spinnerVisible = false;
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        spinnerVisible = true;
+        using var DotNetReference = DotNetObjectReference.Create(this);
+        var authModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/auth.js");
+        await authModule.InvokeVoidAsync("SignIn", DotNetReference, loginModel);
+    }
+
+    [JSInvokable]
+    public Task HandleLoginSuccess(string message)
+    {
+        NavigationManager.NavigateTo(message, true);
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task HandleLoginFailed(string message)
+    {
+        spinnerVisible = false;
+        errorMessage = message;
+        return Task.CompletedTask;
+    }
+}

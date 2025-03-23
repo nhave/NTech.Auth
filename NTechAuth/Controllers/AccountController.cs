@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using NTechAuth.Database;
 using QRCoder;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace NTechAuth.Controllers
 {
@@ -93,22 +94,23 @@ namespace NTechAuth.Controllers
             return Ok(new { filePath });
         }
 
+
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme + "," + JwtBearerDefaults.AuthenticationScheme)]
+        [AllowAnonymous]
         [HttpGet("avatar")]
         public async Task<ActionResult> GetAvatar([FromQuery] string? userId)
         {
-            Console.WriteLine(userId ?? "null");
-            var rootPath = Path.Combine(environment.ContentRootPath);
-
             if (string.IsNullOrEmpty(userId))
             {
-                userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return NotFound("User has no avatar");
+                    return NotFound("Please sign in to get your avatar");
                 }
             }
 
+            var rootPath = Path.Combine(environment.ContentRootPath);
             var avatarPath = Path.Combine(rootPath, "files", "avatars", $"{userId}.png");
 
             if (System.IO.File.Exists(avatarPath))
