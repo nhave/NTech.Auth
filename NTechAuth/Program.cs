@@ -61,7 +61,7 @@ namespace NTechAuth
             // Allows a status code page work with a layout.
             //app.UseStatusCodePagesWithReExecute("/error/{0}");
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseAntiforgery();
 
