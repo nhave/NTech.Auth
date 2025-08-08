@@ -2,21 +2,26 @@
 @attribute [Authorize]
 @inject UserService UserService
 
+<PageTitle>Account</PageTitle>
+
 <div class="row justify-content-center">
     <div class="col col-sm-11 col-md-10 col-lg-9 col-xl-8">
-        <Card>
+        <Card Class="shadow">
             <CardHeader>
                 @if (currentUser != null)
                 {
                     <h1>@($"{currentUser.FirstName} {currentUser.LastName}")</h1>
                 }
             </CardHeader>
-            <CardBody Class="border-bottom">
-                <AccountAvatar />
-            </CardBody>
-            <CardBody>
-                <MFAModule MFAEnabled="@(currentUser != null && currentUser.IsMfaEnabled)" />
-            </CardBody>
+            @if (currentUser != null)
+            {
+                <CardBody Class="border-bottom">
+                    <AccountAvatar />
+                </CardBody>
+                <CardBody>
+                    <MFAModule User="currentUser" />
+                </CardBody>
+            }
         </Card>
     </div>
 </div>
@@ -26,6 +31,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser = await UserService.GetCurrenrUserAsync();
+        currentUser = await UserService.GetCurrentUserAsync();
     }
 }

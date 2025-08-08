@@ -53,14 +53,15 @@ body, app {
     cursor: pointer;
 }
 
-.avatar-edit:hover > .avatar-img {
-    box-shadow: 0 0 0 .125rem var(--bs-black);
-}
+    .avatar-edit:hover > .avatar-img {
+        /*box-shadow: 0 0 0 .125rem var(--bs-black);*/
+        box-shadow: 0 0 0 .125rem var(--bs-emphasis-color);
+    }
 
-[data-bs-theme=dark]
+/*[data-bs-theme=dark]
 .avatar-edit:hover > .avatar-img {
     box-shadow: 0 0 0 .125rem var(--bs-white);
-}
+}*/
 
 .avatar-edit:hover:before {
     content: url("/images/edit.png");
@@ -201,4 +202,61 @@ body, app {
     100% {
         opacity: 0;
     }
+}
+
+.text-box {
+    /*font-family: monospace;*/
+    white-space: pre;
+    overflow-x: auto;
+    counter-reset: line;
+    background: #1e1e1e;
+    color: #fff;
+    /*font-weight: bold;*/
+}
+
+.json-object .key {
+    color: #c74431;
+}
+
+.json-object .string {
+    color: #9aa83a;
+}
+
+.json-object .number {
+    color: #6089b4;
+}
+
+.json-object .boolean {
+    color: #408080;
+}
+
+.json-object .null {
+    color: #408080;
+}
+
+.json-object .bracket {
+    color: #ffd602;
+}
+
+.json-object .square-bracket {
+    color: #da70d6;
+}
+
+.line-numbers {
+    counter-reset: line;
+}
+
+.line-numbers > span {
+    counter-increment: line;
+}
+
+.line-numbers > span:before {
+    content: counter(line);
+    display: inline-block;
+    width: var(--nt-line-numbers-width);
+    border-right: 1px solid #888;
+    /*padding: 0 .5em;*/
+    margin-right: .5em;
+    color: #888;
+    -webkit-user-select: none;
 }

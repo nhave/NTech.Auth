@@ -1,0 +1,47 @@
+﻿@inject OpenIddictService OpenIddictService
+
+<PageTitle>Users</PageTitle>
+
+<h3 class="mb-3">UsersComponent</h3>
+
+<div class="overflow-hidden rounded">
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover m-0">
+            <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Mfa Enabled</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                @if (users is not null)
+                {
+                    foreach (var user in users)
+                    {
+                        <tr class="position-relative">
+                            <td scope="row">@user.Id</td>
+                            <td>@user.Username</td>
+                            <td>@user.Email</td>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td><a href="edit/user/@user.Id" class="stretched-link"></a>@user.IsMfaEnabled</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<User>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await OpenIddictService.GetUsers();
+    }
+}

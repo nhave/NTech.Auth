@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NTechAuth.Models.Database;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace NTechAuth.Database
 {
@@ -8,6 +9,10 @@ namespace NTechAuth.Database
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+
+        // OpenIddict
+        public DbSet<OpenIddictEntityFrameworkCoreApplication> OpenIddictApplications { get; set; }
+        public DbSet<OpenIddictEntityFrameworkCoreScope> OpenIddictScopes { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         { }

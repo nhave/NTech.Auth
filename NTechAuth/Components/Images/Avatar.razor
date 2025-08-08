@@ -1,4 +1,4 @@
-﻿<img id="@Id" src="@Src" height="@Size" width="@Size" class="avatar-img rounded-circle shadow-4 @Class" style="@Style" onerror="this.onerror=null; this.src='@ErrorSrc'">
+﻿<img id="@Id" src="@($"{Src}?no-cache={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}")" height="@Size" width="@Size" class="avatar-img rounded-circle shadow-4 @Class" style="@Style" onerror="this.onerror=null; this.src='@ErrorSrc'">
 
 @code {
 	[Parameter] public string? Src { get; set; } = "api/account/avatar";

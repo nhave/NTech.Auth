@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using NTechAuth.Components;
@@ -32,6 +33,9 @@ namespace NTechAuth
             builder.Services.AddControllers();
 
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<OpenIddictService>();
+
+            builder.Services.AddHttpClient();
 
             builder.Services.AddHostedService<TestData>();
 

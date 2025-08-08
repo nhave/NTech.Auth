@@ -1,0 +1,94 @@
+﻿@inject OpenIddictService OpenIddictService
+@inject IJSRuntime JSRunTime
+
+<style>
+    
+</style>
+
+<div class="nt-grid-container">
+    <div class="table-responsive">
+        <table @ref="grid" class="nt-table table table-bordered table-hover text-nowrap m-0">
+            <thead>
+                <tr class="bg-body-tertiary text-nowrap">
+                    <th class="text-start resizable" role="button">
+                        <div class="d-flex justify-content-between">
+                            <span class="me-2">First Name</span>
+                            <span><i class="bi bi-arrow-down-up"></i></span>
+                        </div>
+                        <div class="resizer"></div>
+                    </th>
+                    <th class="resizable" role="button">
+                        <div class="d-flex justify-content-between">
+                            <span class="me-2">Last Name</span>
+                            <span><i class="bi bi-arrow-down-up"></i></span>
+                        </div>
+                        <div class="resizer"></div>
+                    </th>
+                    <th class="resizable" role="button">
+                        <div class="d-flex justify-content-between">
+                            <span class="me-2">Username</span>
+                            <span><i class="bi bi-arrow-down-up"></i></span>
+                        </div>
+                        <div class="resizer"></div>
+                    </th>
+                    <th class="resizable" role="button">
+                        <div class="d-flex justify-content-between">
+                            <span class="me-2">Email</span>
+                            <span><i class="bi bi-arrow-down-up"></i></span>
+                        </div>
+                        <div class="resizer"></div>
+                    </th>
+                    <th role="button">
+                        <div class="d-flex justify-content-between">
+                            <span class="me-2">MFA Enabled</span>
+                            <span><i class="bi bi-arrow-down-up"></i></span>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (users is not null)
+                {
+                    foreach (var user in users)
+                    {
+                        <tr class="position-relative bg-body-tertiary bg-opacity-50">
+                            <td>
+                                @user.FirstName
+                                <a href="edit/user/@user.Id" class="stretched-link"></a>
+                            </td>
+                            <td>@user.LastName</td>
+                            <td>@user.Username</td>
+                            <td>@user.Email</td>
+                            <td>@user.IsMfaEnabled</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="">
+
+    </div>
+</div>
+
+<div>
+    <NTechAuth.Components.Items.ContextMenu></NTechAuth.Components.Items.ContextMenu>
+</div>
+
+@code {
+    private List<User> users = default!;
+    private ElementReference grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await OpenIddictService.GetUsers();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRunTime.InvokeVoidAsync("ntech.grid.createGrid", grid);
+        }
+    }
+}

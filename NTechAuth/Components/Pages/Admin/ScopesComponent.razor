@@ -1,0 +1,48 @@
+﻿@using OpenIddict.EntityFrameworkCore.Models
+@inject OpenIddictService OpenIddictService
+
+<div class="nt-grid-container">
+    <Grid @ref="grid"
+          TItem="OpenIddictEntityFrameworkCoreScope"
+          Class="table table-hover table-bordered m-0"
+          GridContainerClass="mb-3"
+          HeaderRowCssClass="bg-body-tertiary text-nowrap"
+          RowClass="GetRowClass"
+          DataProvider="ScopesDataProvider"
+          AllowPaging="true"
+          AllowSorting="true"
+          PageSize="10"
+          PageSizeSelectorVisible="true"
+          PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+          Responsive="true"
+          EmptyText="No records to display">
+
+        <GridColumns>
+            <GridColumn TItem="OpenIddictEntityFrameworkCoreScope" HeaderText="Display Name" SortKeySelector="@(item => item.DisplayName)" TextNoWrap="true">
+                @context.DisplayName
+                <a href="edit/scope/@context.Id" class="stretched-link"></a>
+            </GridColumn>
+            <GridColumn TItem="OpenIddictEntityFrameworkCoreScope" HeaderText="Name" SortKeySelector="@(item => item.Name)" TextNoWrap="true">
+                @context.Name
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+</div>
+
+@code {
+    Grid<OpenIddictEntityFrameworkCoreScope> grid = default!;
+    private List<OpenIddictEntityFrameworkCoreScope> scopes = default!;
+
+    private async Task<GridDataProviderResult<OpenIddictEntityFrameworkCoreScope>> ScopesDataProvider(GridDataProviderRequest<OpenIddictEntityFrameworkCoreScope> request)
+    {
+        if (scopes is null)
+            scopes = await OpenIddictService.GetScopes();
+
+        return await Task.FromResult(request.ApplyTo(scopes));
+    }
+
+    private string GetRowClass(OpenIddictEntityFrameworkCoreScope scope)
+    {
+        return "position-relative bg-body-tertiary bg-opacity-50";
+    }
+}

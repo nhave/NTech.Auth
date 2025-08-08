@@ -1,0 +1,83 @@
+﻿@page "/debug/{*subpage}"
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>@($"Debug - {title}")</PageTitle>
+
+<Card Class="shadow">
+    <CardHeader Class="border-0 p-0">
+        <div class="pt-2 px-3">
+            <h1>@title</h1>
+        </div>
+        <ul class="nav nav-tabs px-2">
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage is null ? "active" : "")" aria-current="page" href="debug">
+                    <Icon Name="IconName.PersonGear" />
+                    <div class="d-none d-sm-block ps-2">
+                        Identity
+                    </div>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage == "openid" ? "active" : "")" href="debug/openid">
+                    <Icon Name="IconName.Tools" />
+                    <div class="d-none d-sm-block ps-2">
+                        OpenId
+                    </div>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage == "test" ? "active" : "")" href="debug/test">
+                    <Icon Name="IconName.Boxes" />
+                    <div class="d-none d-sm-block ps-2">
+                        Test
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </CardHeader>
+
+    <CardBody>
+        @if (PageComponent is not null)
+        {
+            <DynamicComponent Type="PageComponent" />
+        }
+        else
+        {
+            <p>Redirecting...</p>
+        }
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public string? Subpage { get; set; }
+    private Type? PageComponent { get; set; }
+    private string? title;
+
+    protected override void OnParametersSet()
+    {
+        PageComponent = Subpage?.ToLower() switch
+        {
+            "openid" => typeof(OpenIdComponent),
+            "test" => typeof(TestComponent),
+            _ => null
+        };
+        
+        title = Subpage?.ToLower() switch
+        {
+            "openid" => "OpenId",
+            "test" => "Test",
+            _ => "Identity"
+        };
+
+        if (Subpage is null)
+        {
+            PageComponent = typeof(DebugComponent);
+        }
+
+        if (PageComponent is null)
+        {
+            NavigationManager.NavigateTo("/debug");
+        }
+    }
+}

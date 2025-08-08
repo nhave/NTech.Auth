@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
+using NTechAuth.Components.Modules;
 using NTechAuth.Database;
+using NTechAuth.Models.Blazor;
 using NTechAuth.Models.Database;
 using NTechAuth.Models.Requests;
 using OtpNet;
@@ -12,7 +14,7 @@ namespace NTechAuth.Services
 {
     public class UserService(ApplicationDbContext context, AuthenticationStateProvider authentication)
     {
-        public async Task<User?> GetCurrenrUserAsync()
+        public async Task<User?> GetCurrentUserAsync()
         {
             var authState = await authentication.GetAuthenticationStateAsync();
 
@@ -46,7 +48,7 @@ namespace NTechAuth.Services
 
         public async Task<string?> GenerateMFASecretAsync()
         {
-            var user = await GetCurrenrUserAsync();
+            var user = await GetCurrentUserAsync();
             if (user == null || user.IsMfaEnabled) return null;
 
             var secretKey = KeyGeneration.GenerateRandomKey(20);
@@ -59,7 +61,7 @@ namespace NTechAuth.Services
 
         public async Task<bool> EnableMFAAsync(string totpCode)
         {
-            var user = await GetCurrenrUserAsync();
+            var user = await GetCurrentUserAsync();
 
             if (user == null || user.IsMfaEnabled || !VerifyTotp(user.MfaSecretKey!, totpCode))
             {
@@ -72,11 +74,16 @@ namespace NTechAuth.Services
             return true;
         }
 
-        public async Task<bool> DisableMFAAsync(string totpCode)
+        public async Task<bool> DisableMFAAsync(DisableMfaModel model)
         {
-            var user = await GetCurrenrUserAsync();
+            var user = await GetCurrentUserAsync();
 
-            if (user == null || !user.IsMfaEnabled)
+            if (user == null || !user.IsMfaEnabled || model.Password == null || model.Password != model.PasswordConfirm)
+            {
+                return false;
+            }
+
+            if (!VerifyTotp(user.MfaSecretKey!, model.TotpCode) || !BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
             {
                 return false;
             }

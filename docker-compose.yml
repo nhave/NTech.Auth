@@ -1,0 +1,24 @@
+services:
+  ntechauth:
+    image: ${DOCKER_REGISTRY-}ntechauth
+    build:
+      context: .
+      dockerfile: NTechAuth/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:${DOCKER_PORT_HTTP};https://+:${DOCKER_PORT_HTTPS}
+      - OpenId__SigningKeyLocation=${OPENID_SIGNING_KEY_LOCATION}
+      - OpenId__EncryptionKey=${OPENID_ENCRYPTION_KEY}
+      - OpenId__Authority=${OPENID_AUTHORITY}
+      - ConnectionStrings__DefaultConnection=${DEFAULT_CONNECTION_STRING}
+      - Defaults__Username=${DEFAULT_USERNAME}
+      - Defaults__Password=${DEFAULT_PASSWORD}
+      - Defaults__LastName=${DEFAULT_LASTNAME}
+      - Defaults__FirstName=${DEFAULT_FIRSTNAME}
+      - Defaults__Email=${DEFAULT_EMAIL}
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_PORT_HTTP}:8080"
+      - "${DOCKER_PORT_HTTPS}:8081"
+    volumes:
+      - /opt/keys:/etc/keys:ro

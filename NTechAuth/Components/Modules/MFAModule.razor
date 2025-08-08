@@ -5,17 +5,24 @@
     <div class="col-sm-6">
         <Card>
             <CardBody>
-                <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">MFA Modal</Button>
-                <Button Color="ButtonColor.Danger" @onclick="DisableMFA">Disable MFA</Button>
-                <p>@($"MFA Enabled: {MFAEnabled}")</p>
+                @if (User!.IsMfaEnabled)
+                {
+                    <Button Color="ButtonColor.Danger" @onclick="OpenDisableModal">Disable MFA</Button>
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">MFA Modal</Button>
+                }
+                <p>@($"MFA Enabled: {User.IsMfaEnabled}")</p>
+                <p>@($"User: {User}")</p>
             </CardBody>
         </Card>
     </div>
 </div>
 
-<Modal @ref="modal" Size="ModalSize.Large" title="Enable Multi-Factor Authentication" IsVerticallyCentered="true" UseStaticBackdrop="true" IsScrollable="true" OnHidden="OnModalHidden">
+<Modal @ref="enableModal" Size="ModalSize.Large" title="Enable Multi-Factor Authentication" IsVerticallyCentered="true" UseStaticBackdrop="true" IsScrollable="true" OnHidden="OnModalHidden">
     <BodyTemplate>
-        @if (mfaStep == 0)
+        @if (enableStep == 0)
         {
             <div class="container-fluid">
                 <div class="row justify-content-center g-3">
@@ -40,14 +47,14 @@
                                         <Icon Class="fs-4" Name="IconName.ClipboardPlusFill" />
                                     </Button>
                                 </div>
-                                <Button Color="ButtonColor.Primary" @onclick="NextStep">Enable MFA</Button>
+                                <Button Color="ButtonColor.Primary" @onclick="NextEnableStep">Enable MFA</Button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         }
-        else if (mfaStep == 1)
+        else if (enableStep == 1)
         {
             <div class="row row-cols-1 g-3">
                 <div class="col">
@@ -62,14 +69,14 @@
                                 <TextInput @bind-Value="@totpCode" Placeholder="MFA Key"></TextInput>
                             </div>
                             <div class="col-auto">
-                                <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="NextStep">Confirm</Button>
+                                <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="NextEnableStep">Confirm</Button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
         }
-        else if (mfaStep == 2)
+        else if (enableStep == 2)
         {
             <div class="row row-cols-1 g-3">
                 <div class="col">
@@ -89,23 +96,70 @@
     </BodyTemplate>
 </Modal>
 
+<Modal @ref="disableModal" Size="ModalSize.Large" title="Disable Multi-Factor Authentication" IsVerticallyCentered="true" UseStaticBackdrop="true">
+    <BodyTemplate>
+        @if (disableStep == 0)
+        {
+            <div class="row g-3">
+                <div class="col-12 col-sm-6 col-lg-7">
+                    <div class="bg-body-tertiary border rounded-3 p-2 h-100">
+                        You are about to disable Multi-Factor Authentication (MFA) for your account. To proceed, please enter your password and confirm it. Then, enter your current MFA key to complete the process.
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-5">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <TextInput type="password" @bind-Value="disableModel.Password" Placeholder="Enter Password" Autocomplete="false" aria-autocomplete="none" />
+                        </div>
+                        <div class="col-12">
+                            <TextInput type="password" @bind-Value="disableModel.PasswordConfirm" Placeholder="Confirm Password" Autocomplete="false" aria-autocomplete="none" />
+                        </div>
+                        <div class="col-12">
+                            <TextInput @bind-Value="disableModel.TotpCode" Placeholder="MFA Key" Autocomplete="false" aria-autocomplete="none" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bg-body-tertiary border rounded-3 p-2">
+                Multi-Factor Authentication (MFA) has been successfully disabled for your account. Your login will no longer require an additional verification step. Please ensure your account remains secure.
+            </div>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        @if (disableStep == 0)
+        {
+            <Button Color="ButtonColor.Danger" @onclick="DisableMFA">Disable</Button>
+        }
+        else
+        {
+            <Button Color="ButtonColor.Secondary" @onclick="DisableMFA">Close</Button>
+        }
+    </FooterTemplate>
+</Modal>
+
 @code {
-    [Parameter] public bool MFAEnabled { get; set; }
-    private Modal modal = default!;
-    private int mfaStep = 0;
+    [Parameter] public User? User { get; set; }
+    private DisableMfaModel disableModel = new DisableMfaModel();
+    private Modal enableModal = default!;
+    private Modal disableModal = default!;
+    private int enableStep = 0;
+    private int disableStep = 0;
     private string? mfaSecret;
     private string? totpCode { get; set; }
 
     private async Task OnShowModalClick()
     {
-        mfaStep = 0;
+        enableStep = 0;
         mfaSecret = await UserService.GenerateMFASecretAsync();
-        if (mfaSecret != null) await modal.ShowAsync();
+        if (mfaSecret != null) await enableModal.ShowAsync();
     }
 
     private async Task OnHideModalClick()
     {
-        await modal.HideAsync();
+        await enableModal.HideAsync();
     }
 
     private void OnModalHidden()
@@ -119,24 +173,40 @@
         await module!.InvokeVoidAsync("CopyToClipboard", mfaSecret);
     }
 
-    private async Task NextStep()
+    private async Task NextEnableStep()
     {
-        if (mfaStep == 1)
+        if (enableStep == 1)
         {
             if (await UserService.EnableMFAAsync(totpCode!))
             {
-                MFAEnabled = true;
-                mfaStep++;
+                enableStep++;
             }
         }
         else
         {
-            mfaStep++;
+            enableStep++;
         }
+    }
+
+    private async Task OpenDisableModal()
+    {
+        disableStep = 0;
+        disableModel.Password = null!;
+        disableModel.PasswordConfirm = null!;
+        disableModel.TotpCode = null!;
+        await disableModal.ShowAsync();
     }
 
     private async Task DisableMFA()
     {
-        if (await UserService.DisableMFAAsync("")) MFAEnabled = false;
+        if (disableStep == 0)
+        {
+            var disabled = await UserService.DisableMFAAsync(disableModel);
+            if (disabled)
+            {
+                disableStep++;
+            }
+        }
+        else await disableModal.HideAsync();
     }
 }

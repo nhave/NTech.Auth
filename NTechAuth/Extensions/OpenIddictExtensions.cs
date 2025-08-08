@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using NTechAuth.Database;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -35,11 +36,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     // Encryption and signing of tokens
                     options.AddEncryptionKey(new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(configuration["OpenId:EncryptionKey"]!)))
-                        .AddEphemeralSigningKey();
-                    //    .AddEphemeralEncryptionKey()
-                    //    .AddEphemeralSigningKey();
+                        Encoding.UTF8.GetBytes(configuration["OpenId:EncryptionKey"]!)));
 
+                    var rsa = RSA.Create();
+                    rsa.ImportFromPem(File.ReadAllText(configuration["OpenId:SigningKeyLocation"]!));
+
+                    options.AddSigningKey(new RsaSecurityKey(rsa));
 
                     // Register scopes (permissions)
                     options.RegisterScopes("api", "avatar");

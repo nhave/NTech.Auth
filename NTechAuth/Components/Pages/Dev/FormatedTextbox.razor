@@ -1,0 +1,131 @@
+﻿@using System.Text.RegularExpressions
+@using System.Text
+@using System.Text.Json
+@inject IJSRuntime JSRunTime
+
+@if (Content is not null)
+{
+    <pre id="@Id" class="@Class">@((MarkupString)Content)</pre>
+}
+
+@code {
+    private string classList = "border p-3 rounded text-box m-0";
+    private string? _class { get; set; }
+    [Parameter] public string? Class
+    {
+        get
+        {
+            var classes = classList;
+            if (Format == "json") classes += " json-object";
+            if (LineNumbers) classes += " line-numbers";
+            if (_class is not null) classes += $" {_class}";
+            return classes;
+        }
+        set { _class = value; }
+    }
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string? Content { get; set; }
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public bool LineNumbers { get; set; }
+
+    protected async override void OnParametersSet()
+    {
+        if (Content is not null)
+        {
+            if (Format == "json")
+            {
+                Content = SyntaxHighlight(Content);
+            }
+
+            if (LineNumbers)
+            {
+                await FormatLineNumbers();
+            }
+        }
+    }
+
+    private string SyntaxHighlight(string json)
+    {
+        // Formatér JSON med indrykninger og linebreaks
+        string formattedJson = FormatJson(json);
+
+        // Escape HTML-tegn for sikkerhed
+        formattedJson = formattedJson
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;");
+
+        // Anvend regex for at matche JSON-elementer og tildele klasser
+        // string pattern = "(\"(\\\\u[a-zA-Z0-9]{4}|\\\\[^u]|[^\\\\\"])*\"(\\s*:)?|\\b(true|false|null)\\b|-?\\d+(\\.\\d*)?(?:[eE][+-]?\\d+)?)";
+        string pattern = @"(""(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\\""])*""(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|[\{\}\[\]])";
+        var regex = new Regex(pattern);
+
+        var highlightedJson = new StringBuilder();
+
+        // Tilføj linjer med passende klasser
+        foreach (var line in formattedJson.Split('\n'))
+        {
+            highlightedJson.Append("<span>" + regex.Replace(line, match =>
+            {
+                string cls = "number"; // Standardklasse
+
+                if (match.Value.StartsWith("\"") && match.Value.EndsWith(":"))
+                {
+                    cls = "key"; // Nøgler (keys)
+                    return $"<span class=\"{cls}\">{match.Value.Replace(":", "")}</span>:";
+                }
+                else if (match.Value.StartsWith("\""))
+                {
+                    cls = "string"; // Strenge (strings)
+                }
+                else if (match.Value == "true" || match.Value == "false")
+                {
+                    cls = "boolean"; // Boolean
+                }
+                else if (match.Value == "null")
+                {
+                    cls = "null"; // Null
+                }
+                else if ("{}".Contains(match.Value))
+                {
+                    cls = "bracket"; // Klasse til {}-parenteser
+                }
+                else if ("[]".Contains(match.Value))
+                {
+                    cls = "square-bracket"; // Klasse til []-parenteser
+                }
+
+                return $"<span class=\"{cls}\">{match.Value}</span>";
+            }) + "</span>");
+        }
+
+        return highlightedJson.ToString();
+    }
+
+    private static string FormatJson(string json)
+    {
+        try
+        {
+            // Parse og formatér JSON
+            var parsedJson = JsonSerializer.Deserialize<object>(json);
+            return JsonSerializer.Serialize(parsedJson, new JsonSerializerOptions
+                {
+                    WriteIndented = true // Tilføj indrykninger
+                });
+        }
+        catch
+        {
+            return $"Kunne ikke formatere JSON: {json}";
+        }
+    }
+
+    private async Task FormatLineNumbers()
+    {
+        try
+        {
+            var navModule = await JSRunTime.InvokeAsync<IJSObjectReference>("import", "./js/textbox.js");
+            await navModule.InvokeVoidAsync("FormatLineNumbers", Id);
+        }
+        catch (Exception e) { }
+    }
+}

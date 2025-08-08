@@ -1,0 +1,24 @@
+﻿@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+
+<p>This is the placeholder content for the <b>OIDC</b> tab.</p>
+<FormatedTextbox Format="json" LineNumbers="true" Content="@wellKnownData" />
+
+@code {
+    private string? wellKnownData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient();
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+        try
+        {
+            wellKnownData = await client.GetStringAsync(".well-known/openid-configuration");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to fetch openid-configuration: {ex.Message}");
+        }
+    }
+}

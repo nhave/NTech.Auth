@@ -1,0 +1,18 @@
+﻿@inject AuthenticationStateProvider AuthenticationState
+
+<p>This is the placeholder content for the <b>Identity</b> tab.</p>
+<FormatedTextbox LineNumbers="true" Content="@claimsData" />
+
+@code {
+    private string? claimsData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        claimsData = "";
+        var state = await AuthenticationState.GetAuthenticationStateAsync();
+        foreach (var claim in state.User.Claims)
+        {
+            claimsData += $"<span>{claim.Type}: {claim.Value}</span>\n";
+        }
+    }
+}

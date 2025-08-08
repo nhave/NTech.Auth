@@ -1,5 +1,5 @@
-﻿<nav class="navbar navbar-dark sticky-top navbar-expand-sm bg-dark border-bottom shadow">
-    <div class="container">
+﻿<nav class="navbar sticky-top navbar-expand-sm bg-body-tertiary border-bottom shadow">
+    <div class="container-md">
         <a class="navbar-brand p-0" href="">
             <img src="images/logo.png" height="40" alt="Logo">
         </a>
@@ -16,49 +16,40 @@
         <NavbarCollapse @ref="collapse">
             <div class="navbar-nav me-auto">
                 <div class="nav-item py-2 py-sm-1 col-12 col-sm-auto">
-                    <hr class="d-sm-none my-0 text-white-50">
+                    <hr class="d-sm-none my-0">
                 </div>
-                <NavLink class="nav-item nav-link" href="counter">
-                    <Icon Name="IconName.PlusSquareFill" /> Counter
+
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <NavLink class="nav-item nav-link" href="admin">
+                            <Icon Name="IconName.GearWideConnected" Class="me-1" />Admin
+                        </NavLink>
+                        <NavLink class="nav-item nav-link" href="debug">
+                            <Icon Name="IconName.Tools" Class="me-1" />Debug
+                        </NavLink>
+                    </Authorized>
+                </AuthorizeView>
+                @* <NavLink class="nav-item nav-link" href="counter">
+                    <Icon Name="IconName.PlusSquareFill" Class="me-1" />Counter
                 </NavLink>
                 <NavLink class="nav-item nav-link" href="weather">
-                    <Icon Name="IconName.Table" /> Weather
-                </NavLink>
+                    <Icon Name="IconName.Table" Class="me-1" />Weather
+                </NavLink> *@
                 @* <NavLink class="nav-item nav-link" href="unknownpage">
                     <Icon Name="IconName.BugFill" /> 404 Debug
                 </NavLink>
                 <NavLink class="nav-item nav-link" href="auth/login-oidc">
                     <Icon Name="IconName.PersonFillLock" /> OIDC Login
                 </NavLink> *@
-                <NavLink class="nav-item nav-link" href=".well-known/openid-configuration" target="_blank">
-                    <Icon Name="IconName.PersonFillLock" /> .well-known
-                </NavLink>
-                <div class="d-sm-none">
-                    <div class="nav-item py-2 py-sm-1 col-12 col-sm-auto">
-                        <hr class="d-sm-none my-0 text-white-50">
-                    </div>
-
-                    <AuthorizeView>
-                        <Authorized>
-                            <NavLink class="nav-item nav-link" href="account">
-                                <Icon Name="IconName.PersonCircle" /> Account
-                            </NavLink>
-                            <NavLink class="nav-item nav-link" href="auth/logout">
-                                <Icon Name="IconName.BoxArrowLeft" /> Sign out
-                            </NavLink>
-                        </Authorized>
-                        <NotAuthorized>
-                            <NavLink class="nav-item nav-link" href="auth/login">
-                                <Icon Name="IconName.PersonCircle" /> Sign in
-                            </NavLink>
-                        </NotAuthorized>
-                    </AuthorizeView>
-
-                </div>
+                @* <NavLink class="nav-item nav-link" href=".well-known/openid-configuration" target="_blank">
+                    <Icon Name="IconName.PersonFillLock" Class="me-1" />.well-known
+                </NavLink> *@
             </div>
             <div class="navbar-nav">
+                <hr class="nav-item d-sm-none my-2">
+                <ThemeMenu />
                 <Dropdown Class="nav-item py-2 py-sm-0 d-none d-sm-block">
-                    <DropdownToggleButton Class="nav-link p-0 border-0">
+                    <DropdownToggleButton Class="nav-link py-0 pe-0 border-0">
                         <AuthorizeView>
                             <Authorized>
                                 <Avatar Size="40" />
@@ -81,6 +72,24 @@
                         </AuthorizeView>
                     </DropdownMenu>
                 </Dropdown>
+                <div class="d-sm-none">
+                    <hr class="nav-item d-sm-none my-2">
+                    <AuthorizeView>
+                        <Authorized>
+                            <NavLink class="nav-item nav-link" href="account">
+                                <Icon Name="IconName.PersonCircle" Class="me-1" />Account
+                            </NavLink>
+                            <NavLink class="nav-item nav-link" href="auth/logout">
+                                <Icon Name="IconName.BoxArrowLeft" Class="me-1" />Sign out
+                            </NavLink>
+                        </Authorized>
+                        <NotAuthorized>
+                            <NavLink class="nav-item nav-link" href="auth/login">
+                                <Icon Name="IconName.PersonCircle" Class="me-1" />Sign in
+                            </NavLink>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
             </div>
         </NavbarCollapse>
     </div>

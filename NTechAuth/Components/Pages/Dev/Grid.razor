@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime JSRunTime
+@inject OpenIddictService OpenIddictService
+
+<div id="wrapper"></div>
+
+@code {
+    public string[] Culomns = ["Id", "Client Id", "Client Type"];
+    public string[] Data = ["id", "clientId", "clientType"];
+    private List<ApplicationModel>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            users = await OpenIddictService.GetApplicationsAsync();
+            await JSRunTime.InvokeVoidAsync("ntauth.grid.create", "wrapper", Culomns, users, Data);
+        }
+    }
+}

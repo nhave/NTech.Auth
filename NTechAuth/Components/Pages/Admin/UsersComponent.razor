@@ -1,0 +1,57 @@
+﻿@inject OpenIddictService OpenIddictService
+@inject IJSRuntime JSRunTime
+
+<div class="nt-grid-container">
+    <Grid @ref="grid" 
+          TItem="User"
+          Class="table table-hover table-bordered m-0"
+          GridContainerClass="mb-3"
+          HeaderRowCssClass="bg-body-tertiary text-nowrap"
+          RowClass="GetRowClass"
+          DataProvider="UsersDataProvider"
+          AllowPaging="true"
+          AllowSorting="true"
+          PageSize="10"
+          PageSizeSelectorVisible="true"
+          PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+          Responsive="true"
+          EmptyText="No records to display">
+
+        <GridColumns>
+            <GridColumn TItem="User" HeaderText="First Name" SortKeySelector="@(item => item.FirstName)" TextNoWrap="true">
+                @context.FirstName
+                <a href="edit/user/@context.Id" class="stretched-link"></a>
+            </GridColumn>
+            <GridColumn TItem="User" HeaderText="Last Name" SortKeySelector="@(item => item.LastName)" TextNoWrap="true">
+                @context.LastName
+            </GridColumn>
+            <GridColumn TItem="User" HeaderText="Username" SortKeySelector="@(item => item.Username)" TextNoWrap="true">
+                @context.Username
+            </GridColumn>
+            <GridColumn TItem="User" HeaderText="Email" SortKeySelector="@(item => item.Email)" TextNoWrap="true">
+                @context.Email
+            </GridColumn>
+            <GridColumn TItem="User" HeaderText="MFA Enabled" SortKeySelector="@(item => item.IsMfaEnabled)" TextNoWrap="true">
+                @context.IsMfaEnabled
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+</div>
+
+@code {
+    Grid<User> grid = default!;
+    private List<User> users = default!;
+
+    private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
+    {
+        if (users is null)
+            users = await OpenIddictService.GetUsers();
+
+        return await Task.FromResult(request.ApplyTo(users));
+    }
+
+    private string GetRowClass(User user)
+    {
+        return "position-relative bg-body-tertiary bg-opacity-50";
+    }
+}
