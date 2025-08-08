@@ -6,7 +6,7 @@ services:
       dockerfile: NTechAuth/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:${DOCKER_PORT_HTTP}
+      - ASPNETCORE_URLS=http://+:8080
       - OpenId__SigningKeyLocation=${OPENID_SIGNING_KEY_LOCATION}
       - OpenId__EncryptionKey=${OPENID_ENCRYPTION_KEY}
       - OpenId__Authority=${OPENID_AUTHORITY}
