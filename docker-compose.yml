@@ -21,4 +21,4 @@ services:
       - "${DOCKER_PORT_HTTP}:8080"
       - "${DOCKER_PORT_HTTPS}:8081"
     volumes:
-      - /opt/keys:/etc/keys:ro
+      - ${HOST_KEYS_PATH}:/etc/keys:ro
