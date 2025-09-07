@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using NTechAuth.Database;
 using System.Security.Cryptography;
 using System.Text;
+using static NTechAuth.Database.ApplicationDbContext;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
