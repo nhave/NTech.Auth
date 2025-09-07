@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using NTech.Auth.Components;
 using NTech.Auth.Database;
 using NTech.Auth.Services;
-using NTech.Auth.Utilities;
 
 namespace NTech.Auth
 {
@@ -13,8 +11,6 @@ namespace NTech.Auth
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            ConfigurationUpdater.UpdateConfiguration(builder.Configuration);
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
