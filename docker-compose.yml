@@ -7,6 +7,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTPS_PORT = 443
       - OpenId__SigningKeyLocation=${OPENID_SIGNING_KEY_LOCATION}
       - OpenId__EncryptionKey=${OPENID_ENCRYPTION_KEY}
       - OpenId__Authority=${OPENID_AUTHORITY}
