@@ -7,7 +7,7 @@
     <ProjectGuid>eb5dbce6-dd67-4bf2-a6d0-35ee4ff55a47</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
-    <DockerServiceName>ntechauth</DockerServiceName>
+    <DockerServiceName>ntech.auth</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include=".env" />

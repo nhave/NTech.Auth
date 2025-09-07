@@ -1,0 +1,24 @@
+﻿@using NTech.Auth.Components.Pages.Errors
+@inject NavigationManager navigationManager
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <CascadingValue Value="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                    <NotAuthorized>
+                        @{
+                            var returnUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
+                            navigationManager.NavigateTo($"auth/login?ReturnUrl={returnUrl}", true);
+                        }
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </CascadingValue>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(Layout.MainLayout)">
+                <StatusCode Status="404" />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

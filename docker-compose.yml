@@ -3,7 +3,7 @@ services:
     image: ${DOCKER_REGISTRY-}ntechauth
     build:
       context: .
-      dockerfile: NTechAuth/Dockerfile
+      dockerfile: NTech.Auth/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080

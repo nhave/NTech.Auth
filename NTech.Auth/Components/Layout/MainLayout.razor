@@ -1,0 +1,101 @@
+﻿@inherits LayoutComponentBase
+
+<LayoutData>
+    <Navbar Color="#992100">
+        <StartTemplate>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <NavLink class="nav-item nav-link" href="admin">
+                        <Icon Name="IconName.GearWideConnected" Class="me-1" />Admin
+                    </NavLink>
+                    <NavLink class="nav-item nav-link" href="debug">
+                        <Icon Name="IconName.Tools" Class="me-1" />Debug
+                    </NavLink>
+                </Authorized>
+            </AuthorizeView>
+        </StartTemplate>
+        <EndTemplate>
+            <ThemeMenu />
+            <Dropdown Class="nav-item py-2 py-sm-0 d-none d-sm-block">
+                <DropdownToggleButton Class="nav-link py-0 pe-0 border-0">
+                    <AuthorizeView>
+                        <Authorized>
+                            <Avatar Size="40" />
+                        </Authorized>
+                        <NotAuthorized>
+                            <Avatar Src="images/no_avatar.png" Size="40" />
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </DropdownToggleButton>
+                <DropdownMenu Position="DropdownMenuPosition.End">
+                    <AuthorizeView>
+                        <Authorized>
+                            <DropdownItem To="account" Type="DropdownItemType.Link">Account</DropdownItem>
+                            <DropdownDivider />
+                            <DropdownItem To="auth/logout" Type="DropdownItemType.Link">Sign out</DropdownItem>
+                        </Authorized>
+                        <NotAuthorized>
+                            <DropdownItem To="auth/login" Type="DropdownItemType.Link">Sign in</DropdownItem>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </DropdownMenu>
+            </Dropdown>
+            <div class="d-sm-none">
+                <hr class="nav-item d-sm-none my-2">
+                <AuthorizeView>
+                    <Authorized>
+                        <NavLink class="nav-item nav-link" href="account">
+                            <Icon Name="IconName.PersonCircle" Class="me-1" />Account
+                        </NavLink>
+                        <NavLink class="nav-item nav-link" href="auth/logout">
+                            <Icon Name="IconName.BoxArrowLeft" Class="me-1" />Sign out
+                        </NavLink>
+                    </Authorized>
+                    <NotAuthorized>
+                        <NavLink class="nav-item nav-link" href="auth/login">
+                            <Icon Name="IconName.PersonCircle" Class="me-1" />Sign in
+                        </NavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </EndTemplate>
+        <CollapsedTemplate>
+            <AuthorizeView>
+                <Authorized>
+                    <Avatar Size="40" />
+                </Authorized>
+            </AuthorizeView>
+        </CollapsedTemplate>
+    </Navbar>
+</LayoutData>
+
+<ScrollingTextBG Text="N-TECH AUTHENTICATION" Color="#ff3700" />
+
+<main>
+    <div class="container-xxl my-5">
+        @Body
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+</main>
+
+<LayoutData>
+    <Footer>
+        <StartTemplate>
+            <a href="/" class="mb-3 me-2 mb-md-0 text-decoration-none lh-1">
+                <img src="_content/NTech.Blazor/favicon.png" height="40" />
+            </a>
+            <span class="">© 2025 N-Tech</span>
+        </StartTemplate>
+        <EndTemplate>
+            <a class="nav-link no-drag" href="https://github.com/nhave/NTech.Auth" target="_blank">
+                <Icon Name="IconName.Github" />
+            </a>
+        </EndTemplate>
+    </Footer>
+</LayoutData>
