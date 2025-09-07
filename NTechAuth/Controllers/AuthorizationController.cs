@@ -1,20 +1,22 @@
 ﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NTechAuth.Components;
+using NTechAuth.Database;
+using NTechAuth.Models.Requests;
+using NTechAuth.Services;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using NTechAuth.Models.Requests;
-using NTechAuth.Database;
-using Microsoft.EntityFrameworkCore;
-using NTechAuth.Services;
+using System.Security.Principal;
 
 namespace NTechAuth.Controllers
 {
     [ApiController]
-    public class AuthorizationController(ApplicationDbContext context, UserService userService) : Controller
+    public class AuthorizationController(ApplicationDbContext context, UserService userService, IOpenIddictApplicationManager applicationManager) : Controller
     {
         [HttpPost("~/api/auth/login")]
         [AllowAnonymous]
@@ -73,6 +75,11 @@ namespace NTechAuth.Controllers
             var request = HttpContext.GetOpenIddictServerRequest() ??
                           throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
+            var app = await applicationManager.FindByClientIdAsync(request.ClientId!) ??
+                throw new InvalidOperationException("The application cannot be found.");
+
+            var properties = await applicationManager.GetPropertiesAsync(app);
+
             ClaimsPrincipal claimsPrincipal;
 
             if (request.IsClientCredentialsGrantType())
@@ -86,11 +93,16 @@ namespace NTechAuth.Controllers
                 identity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId ?? throw new InvalidOperationException());
 
                 // Add some claim, don't forget to add destination otherwise it won't be added to the access token.
-                identity.AddClaim("some-claim", "some-value", OpenIddictConstants.Destinations.AccessToken);
+                //identity.AddClaim("some-claim", "some-value", OpenIddictConstants.Destinations.AccessToken);
 
                 claimsPrincipal = new ClaimsPrincipal(identity);
 
                 claimsPrincipal.SetScopes(request.GetScopes());
+
+                if (properties.TryGetValue(OpenIddictConstants.Claims.Audience, out var audience))
+                {
+                    claimsPrincipal.SetResources(audience.GetString()!);
+                }
             }
             else if (request.IsAuthorizationCodeGrantType())
             {
@@ -100,7 +112,7 @@ namespace NTechAuth.Controllers
             else if (request.IsRefreshTokenGrantType())
             {
                 // Retrieve the claims principal stored in the refresh token.
-                claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
+                claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal!;
             }
             else
             {
@@ -117,6 +129,13 @@ namespace NTechAuth.Controllers
         {
             var request = HttpContext.GetOpenIddictServerRequest() ??
                 throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+
+            var app = await applicationManager.FindByClientIdAsync(request.ClientId!) ??
+                throw new InvalidOperationException("The application cannot be found.");
+
+            var properties = await applicationManager.GetPropertiesAsync(app);
+
+            //string audience = properties[OpenIddictConstants.Claims.Audience].GetString()!;
 
             // Retrieve the user principal stored in the authentication cookie.
             var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -139,7 +158,7 @@ namespace NTechAuth.Controllers
                 // 'subject' claim which is required
                 //new Claim(OpenIddictConstants.Claims.Subject, result.Principal.Identity.Name),
                 new Claim(OpenIddictConstants.Claims.Subject, result.Principal.GetClaim(ClaimTypes.NameIdentifier)!),
-                new Claim("some claim", "some value").SetDestinations(OpenIddictConstants.Destinations.AccessToken),
+                //new Claim("some claim", "some value").SetDestinations(OpenIddictConstants.Destinations.AccessToken),
                 new Claim(OpenIddictConstants.Claims.Name, result.Principal.GetClaim(ClaimTypes.Name)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken),
                 new Claim(OpenIddictConstants.Claims.Email, result.Principal.GetClaim(ClaimTypes.Email)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken)
             };
@@ -150,6 +169,12 @@ namespace NTechAuth.Controllers
 
             // Set requested scopes (this is not done automatically)
             claimsPrincipal.SetScopes(request.GetScopes());
+
+            if (properties.TryGetValue(OpenIddictConstants.Claims.Audience, out var audience))
+            {
+                claimsPrincipal.SetResources(audience.GetString()!);
+            }
+
 
             // Signing in with the OpenIddict authentiction scheme trigger OpenIddict to issue a code (which can be exchanged for an access token)
             return SignIn(claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);

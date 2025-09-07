@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using NTechAuth.Database;
+using NTechAuth.Models.Database;
 using System.Security.Cryptography;
 using System.Text;
 using static NTechAuth.Database.ApplicationDbContext;
@@ -55,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         .EnableUserInfoEndpointPassthrough();
 
                     // Disable encryption
-                    //options.DisableAccessTokenEncryption();
+                    options.DisableAccessTokenEncryption();
                 });
 
             services.AddAuthorization();

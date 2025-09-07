@@ -215,25 +215,29 @@ body {
     border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
 }
 
+/*.nt-grid-container th {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;*/ /* eller en fast bredde */
+    /*box-sizing: border-box;
+}*/
+
 .nt-grid-container thead tr:first-child {
-    border-top-color: lime !important;
     border-top-width: 0;
 }
 
 .nt-grid-container tbody tr:last-child {
-    border-bottom-color: blue !important;
     border-bottom-width: 0;
 }
 
 .nt-grid-container th:first-child,
 .nt-grid-container td:first-child {
-    border-left-color: orange !important;
     border-left-width: 0;
 }
 
 .nt-grid-container th:last-child,
 .nt-grid-container td:last-child {
-    border-right-color: red !important;
     border-right-width: 0;
 }
 

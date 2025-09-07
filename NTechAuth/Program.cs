@@ -54,7 +54,7 @@ namespace NTechAuth
             {
                 app.UseForwardedHeaders(new ForwardedHeadersOptions
                 {
-                    ForwardedHeaders = ForwardedHeaders.XForwardedProto
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                 });
             }
 

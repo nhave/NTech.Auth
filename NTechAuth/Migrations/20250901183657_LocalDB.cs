@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace NTechAuth.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class LocalDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -77,7 +77,11 @@ namespace NTechAuth.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false)
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    IsMfaEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    MfaSecretKey = table.Column<string>(type: "text", nullable: true),
+                    MfaSetupDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    MfaBackupCodes = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

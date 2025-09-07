@@ -1,6 +1,15 @@
 ﻿@using OpenIddict.EntityFrameworkCore.Models
 @inject OpenIddictService OpenIddictService
 
+<div class="row justify-content-between mb-3">
+    <div class="col">
+
+    </div>
+    <div class="col-auto">
+        <a class="btn btn-primary" href="applications/new">Add Application</a>
+    </div>
+</div>
+
 <div class="nt-grid-container">
     <Grid @ref="grid"
           TItem="ApplicationModel"
