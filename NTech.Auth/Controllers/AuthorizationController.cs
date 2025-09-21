@@ -159,7 +159,7 @@ namespace NTech.Auth.Controllers
                 // 'subject' claim which is required
                 //new Claim(OpenIddictConstants.Claims.Subject, result.Principal.Identity.Name),
                 new Claim(OpenIddictConstants.Claims.Subject, result.Principal.GetClaim(ClaimTypes.NameIdentifier)!),
-                new Claim(OpenIddictConstants.Claims.Audience, result.Principal.GetClaim(ClaimTypes.NameIdentifier)!),
+                new Claim(OpenIddictConstants.Claims.Audience, request.ClientId!),
 
                 //new Claim("some claim", "some value").SetDestinations(OpenIddictConstants.Destinations.AccessToken),
                 new Claim(OpenIddictConstants.Claims.Name, result.Principal.GetClaim(ClaimTypes.Name)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken),
