@@ -48,12 +48,21 @@ namespace NTech.Auth
             // Aktivate XForwardedProto Headers use with NGINX Reverse Proxy.
             if (app.Environment.IsProduction() || app.Environment.IsStaging() || Environment.GetEnvironmentVariable("PROXY") == "true")
             {
-                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                //app.UseForwardedHeaders(new ForwardedHeadersOptions
+                //{
+                //    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                //});
+
+                var forwardedOptions = new ForwardedHeadersOptions
                 {
-                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
-                    KnownNetworks = { },
-                    KnownProxies = { }
-                });
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                };
+
+                // Tillad alle proxies/netværk (sikkert nok hvis NPM altid overskriver headers)
+                forwardedOptions.KnownNetworks.Clear();
+                forwardedOptions.KnownProxies.Clear();
+
+                app.UseForwardedHeaders(forwardedOptions);
             }
 
             // Allows a status code page work with a layout.
