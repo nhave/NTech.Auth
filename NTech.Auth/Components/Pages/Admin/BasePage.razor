@@ -1,0 +1,48 @@
+﻿<Card Class="shadow">
+	<CardHeader Class="border-0 pb-0">
+		@Header
+	</CardHeader>
+    <ul class="nav nav-tabs card-tabs px-2">
+        <li class="nav-item">
+            <a class="nav-link d-flex @(Subpage is null ? "active" : "")" aria-current="page" href="admin">
+                <Icon Name="IconName.GearWideConnected" />
+                <div class="d-none d-sm-block ps-2">
+                    Configuration
+                </div>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex @(Subpage == "users" ? "active" : "")" href="admin/users">
+                <Icon Name="IconName.People" />
+                <div class="d-none d-sm-block ps-2">
+                    Users
+                </div>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex @(Subpage == "applications" ? "active" : "")" href="admin/applications">
+                <Icon Name="IconName.WindowStack" />
+                <div class="d-none d-sm-block ps-2">
+                    Applications
+                </div>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex @(Subpage == "scopes" ? "active" : "")" href="admin/scopes">
+                <Icon Name="IconName.BracesAsterisk" />
+                <div class="d-none d-sm-block ps-2">
+                    Scopes
+                </div>
+            </a>
+        </li>
+    </ul>
+	<CardBody>
+		@Body
+	</CardBody>
+</Card>
+
+@code {
+	[Parameter] public RenderFragment Header { get; set; } = default!;
+	[Parameter] public RenderFragment Body { get; set; } = default!;
+	[Parameter] public string? Subpage { get; set; }
+}

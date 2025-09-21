@@ -10,7 +10,7 @@ namespace NTech.Auth.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController(ApplicationDbContext context, IWebHostEnvironment environment) : Controller
+    public class AccountController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration) : Controller
     {
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         [HttpGet("GenerateQRCode")]
@@ -77,8 +77,8 @@ namespace NTech.Auth.Controllers
                 return Unauthorized();
             }
 
-            var rootPath = Path.Combine(environment.ContentRootPath);
-            var filePath = Path.Combine(rootPath, "files", "avatars", $"{userId}.png");
+            var rootPath = Path.Combine(configuration["Files:FilePath"]!);
+            var filePath = Path.Combine(rootPath, "avatars", $"{userId}.png");
 
             var directory = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(directory))
@@ -110,8 +110,8 @@ namespace NTech.Auth.Controllers
                 }
             }
 
-            var rootPath = Path.Combine(environment.ContentRootPath);
-            var avatarPath = Path.Combine(rootPath, "files", "avatars", $"{userId}.png");
+            var rootPath = Path.Combine(configuration["Files:FilePath"]!);
+            var avatarPath = Path.Combine(rootPath, "avatars", $"{userId}.png");
 
             if (System.IO.File.Exists(avatarPath))
             {

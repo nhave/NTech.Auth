@@ -78,6 +78,7 @@ html, body {
 .img-container {
     display: flex;
     justify-content: center;
+    overflow: hidden;
 }
 
     .img-container img {
@@ -317,4 +318,16 @@ html, body {
 
 .nt-grid-container .pagination {
     margin: 0;
+}
+
+/*.btn-icon {
+    margin: -2px;
+}
+
+.btn-icon::after {
+    display: none;
+}*/
+
+.dropdown-header {
+    height: fit-content;
 }

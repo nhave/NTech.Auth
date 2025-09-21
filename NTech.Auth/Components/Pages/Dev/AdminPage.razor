@@ -1,0 +1,132 @@
+﻿@page "/admin1/{*subpage}"
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>@($"Admin - {title}")</PageTitle>
+
+<Card Class="shadow">
+    <CardHeader Class="border-0 p-0">
+        <div class="row justify-content-between pt-2 px-3">
+            <div class="col-11">
+                <h1>@title</h1>
+            </div>
+            <div class="col-1 d-flex justify-content-end">
+                @if (Subpage == "users" || Subpage == "applications" || Subpage == "scopes")
+                {
+                    <Dropdown>
+                        <DropdownToggleButton Class="btn-icon border-0 p-0">
+                            <Icon Size="IconSize.x1" Name="IconName.ThreeDotsVertical" />
+                        </DropdownToggleButton>
+                        <DropdownMenu Position="DropdownMenuPosition.End">
+                            @if (Subpage == "users")
+                            {
+                                <DropdownItem To="admin/users/new" Type="DropdownItemType.Link">Add new user</DropdownItem>
+                            }
+                            else if (Subpage == "applications")
+                            {
+                                <DropdownItem To="admin/applications/new" Type="DropdownItemType.Link">Add new application</DropdownItem>
+                            }
+                            else if (Subpage == "scopes")
+                            {
+                                <DropdownItem To="admin/scopes/new" Type="DropdownItemType.Link">Add new scope</DropdownItem>
+                            }
+                        </DropdownMenu>
+                    </Dropdown>
+                }
+            </div>
+        </div>
+        @* <div class="pt-2 px-3">
+            <h1>@title</h1>
+        </div> *@
+        <ul class="nav nav-tabs px-2">
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage is null ? "active" : "")" aria-current="page" href="admin">
+                    <Icon Name="IconName.GearWideConnected" />
+                    <div class="d-none d-sm-block ps-2">
+                        Configuration
+                    </div>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage == "users" ? "active" : "")" href="admin/users">
+                    <Icon Name="IconName.People" />
+                    <div class="d-none d-sm-block ps-2">
+                        Users
+                    </div>
+                </a>
+            </li>
+            @* <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage == "userstest" ? "active" : "")" href="admin/userstest">
+                    <Icon Name="IconName.People" />
+                    <div class="d-none d-sm-block ps-2">
+                        Users Test
+                    </div>
+                </a>
+            </li> *@
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage == "applications" ? "active" : "")" href="admin/applications">
+                    <Icon Name="IconName.WindowStack" />
+                    <div class="d-none d-sm-block ps-2">
+                        Applications
+                    </div>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex @(Subpage == "scopes" ? "active" : "")" href="admin/scopes">
+                    <Icon Name="IconName.BracesAsterisk" />
+                    <div class="d-none d-sm-block ps-2">
+                        Scopes
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </CardHeader>
+
+    <CardBody>
+        @if (PageComponent is not null)
+        {
+            <DynamicComponent Type="PageComponent" />
+        }
+        else
+        {
+            <p>Redirecting...</p>
+        }
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public string? Subpage { get; set; }
+    private Type? PageComponent { get; set; }
+    private string? title;
+
+    protected override void OnParametersSet()
+    {
+        PageComponent = Subpage?.ToLower() switch
+        {
+            // "users" => typeof(UsersComponent),
+            // "userstest" => typeof(UsersTestComponent),
+            // "applications" => typeof(ApplicationsComponent),
+            // "scopes" => typeof(ScopesComponent),
+            _ => null
+        };
+
+        title = Subpage?.ToLower() switch
+        {
+            "users" => "Users",
+            "userstest" => "Users Test",
+            "applications" => "Applications",
+            "scopes" => "Scopes",
+            _ => "Configuration"
+        };
+
+        if (Subpage is null)
+        {
+            // PageComponent = typeof(AdminComponent);
+        }
+
+        if (PageComponent is null)
+        {
+            NavigationManager.NavigateTo("/admin");
+        }
+    }
+}

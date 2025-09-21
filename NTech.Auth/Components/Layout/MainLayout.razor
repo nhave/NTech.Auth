@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject IWebHostEnvironment Env
 
 <LayoutData>
     <Navbar Color="#992100">
@@ -8,9 +9,12 @@
                     <NavLink class="nav-item nav-link" href="admin">
                         <Icon Name="IconName.GearWideConnected" Class="me-1" />Admin
                     </NavLink>
-                    <NavLink class="nav-item nav-link" href="debug">
-                        <Icon Name="IconName.Tools" Class="me-1" />Debug
-                    </NavLink>
+                    @if (Env.IsDevelopment())
+                    {       
+                        <NavLink class="nav-item nav-link" href="debug">
+                            <Icon Name="IconName.Tools" Class="me-1" />Debug
+                        </NavLink>
+                    }
                 </Authorized>
             </AuthorizeView>
         </StartTemplate>

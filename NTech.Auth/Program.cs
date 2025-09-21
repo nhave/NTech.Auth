@@ -46,7 +46,7 @@ namespace NTech.Auth
             }
 
             // Aktivate XForwardedProto Headers use with NGINX Reverse Proxy.
-            if (app.Environment.IsProduction() || app.Environment.IsStaging())
+            if (app.Environment.IsProduction() || app.Environment.IsStaging() || Environment.GetEnvironmentVariable("PROXY") == "true")
             {
                 app.UseForwardedHeaders(new ForwardedHeadersOptions
                 {

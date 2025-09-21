@@ -1,0 +1,135 @@
+﻿@inject OpenIddictService OpenIddictService
+@inject IJSRuntime JSRunTime
+@using System.Security.Claims
+
+@attribute [Authorize(Roles = "Admin")]
+@page "/admin/users"
+
+<PageTitle>Admin - Users</PageTitle>
+
+<AuthorizeView Context="UserContext">
+    <Authorized>
+
+        <BasePage Subpage="users">
+            <Header>
+                <div class="row justify-content-between">
+                    <div class="col-11">
+                        <h1>Users</h1>
+                    </div>
+                    <div class="col-1 d-flex justify-content-end align-items-center">
+                        <Dropdown Class="dropdown-header">
+                            <DropdownToggleButton Class="btn-icon border-0 p-0">
+                                <Icon Size="IconSize.x3" Name="IconName.ThreeDotsVertical" />
+                            </DropdownToggleButton>
+                            <DropdownMenu Position="DropdownMenuPosition.End">
+                                <DropdownItem Type="DropdownItemType.Button" @onclick="NewUserModal.ShowAsync">Add new user</DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+                </div>
+
+            </Header>
+            <Body>
+                <div class="nt-grid-container">
+                    <Grid @ref="grid"
+                          TItem="User"
+                          Class="table table-hover table-bordered m-0"
+                          GridContainerClass="mb-3"
+                          HeaderRowCssClass="bg-body-tertiary text-nowrap"
+                          RowClass="GetRowClass"
+                          DataProvider="UsersDataProvider"
+                          AllowPaging="true"
+                          AllowSorting="true"
+                          PageSize="10"
+                          PageSizeSelectorVisible="true"
+                          PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+                          Responsive="true"
+                          EmptyText="No records to display">
+
+                        <GridColumns>
+                            <GridColumn TItem="User" HeaderText="First Name" SortKeySelector="@(item => item.FirstName)" TextNoWrap="true">
+                                @context.FirstName
+                                <ContextTrigger Class="stretched-link" ContextMenu="ContextMenu" Item="@context" />
+                            </GridColumn>
+                            <GridColumn TItem="User" HeaderText="Last Name" SortKeySelector="@(item => item.LastName)" TextNoWrap="true">
+                                @context.LastName
+                            </GridColumn>
+                            <GridColumn TItem="User" HeaderText="Username" SortKeySelector="@(item => item.Username)" TextNoWrap="true">
+                                @context.Username
+                            </GridColumn>
+                            <GridColumn TItem="User" HeaderText="Email" SortKeySelector="@(item => item.Email)" TextNoWrap="true">
+                                @context.Email
+                            </GridColumn>
+                            <GridColumn TItem="User" HeaderText="MFA Enabled" SortKeySelector="@(item => item.IsMfaEnabled)" TextNoWrap="true">
+                                @context.IsMfaEnabled
+                            </GridColumn>
+                        </GridColumns>
+                    </Grid>
+                </div>
+            </Body>
+        </BasePage>
+
+        <ContextMenu @ref="ContextMenu">
+            @{
+                var user = context as User;
+                var userId = UserContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var isCurrentUser = userId == user?.Id;
+
+                <ContextItem OnClick="NewUserModal.ShowAsync">
+                    <Icon Name="IconName.People" Class="me-2" />New User
+                </ContextItem>
+                <ContextDivider />
+
+                if (isCurrentUser)
+                {
+                    <ContextItem Href="account">
+                        <Icon Name="IconName.PersonCircle" Class="me-2" />Account
+                    </ContextItem>
+                }
+                else
+                {
+                    <ContextItem>
+                        <Icon Name="IconName.Pencil" Class="me-2" />Edit
+                    </ContextItem>
+                    <ContextDivider />
+                    <ContextItem Class="text-danger">
+                        <Icon Name="IconName.Trash" Class="me-2" />Remove
+                    </ContextItem>
+                }
+            }
+        </ContextMenu>
+    </Authorized>
+</AuthorizeView>
+
+<EditForm Model="this">
+    <Modal @ref="NewUserModal" Title="New user" OnHidden="OnModalClosed">
+        <BodyTemplate>
+            <h5>Not implemented yet</h5>
+        </BodyTemplate>
+    </Modal>
+</EditForm>
+
+@code {
+    Grid<User> grid = default!;
+    private List<User> users = default!;
+    private ContextMenu ContextMenu = default!;
+    private Modal NewUserModal = default!;
+
+    private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
+    {
+        if (users is null)
+            users = await OpenIddictService.GetUsers();
+
+        return await Task.FromResult(request.ApplyTo(users));
+    }
+
+    private string GetRowClass(User user)
+    {
+        return "position-relative bg-body-tertiary bg-opacity-50";
+    }
+
+    private void OnModalClosed()
+    {
+        StateHasChanged();
+    }
+}

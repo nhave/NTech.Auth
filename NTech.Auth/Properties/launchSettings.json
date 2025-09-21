@@ -29,6 +29,17 @@
       },
       "publishAllPorts": true,
       "useSSL": true
+    },
+    "Proxy": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://auth.ntech.internal/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PROXY": "true"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5096"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
