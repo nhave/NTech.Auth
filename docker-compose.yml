@@ -20,8 +20,10 @@ services:
       - Defaults__LastName=${DEFAULT_LASTNAME}
       - Defaults__FirstName=${DEFAULT_FIRSTNAME}
       - Defaults__Email=${DEFAULT_EMAIL}
+      - Files__FilePath=/etc/resources
     restart: unless-stopped
     ports:
       - "${DOCKER_PORT_HTTP}:8080"
     volumes:
       - ${HOST_KEYS_PATH}:/etc/keys:ro
+      - ${HOST_RESOURCES_PATH}:/etc/resources
