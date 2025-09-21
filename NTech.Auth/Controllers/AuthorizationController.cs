@@ -91,6 +91,7 @@ namespace NTech.Auth.Controllers
 
                 // Subject (sub) is a required field, we use the client id as the subject identifier here.
                 identity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId ?? throw new InvalidOperationException());
+                identity.AddClaim(OpenIddictConstants.Claims.Audience, request.ClientId);
 
                 // Add some claim, don't forget to add destination otherwise it won't be added to the access token.
                 //identity.AddClaim("some-claim", "some-value", OpenIddictConstants.Destinations.AccessToken);
@@ -99,10 +100,10 @@ namespace NTech.Auth.Controllers
 
                 claimsPrincipal.SetScopes(request.GetScopes());
 
-                if (properties.TryGetValue(OpenIddictConstants.Claims.Audience, out var audience))
-                {
-                    claimsPrincipal.SetResources(audience.GetString()!);
-                }
+                //if (properties.TryGetValue(OpenIddictConstants.Claims.Audience, out var audience))
+                //{
+                //    claimsPrincipal.SetResources(audience.GetString()!);
+                //}
             }
             else if (request.IsAuthorizationCodeGrantType())
             {
@@ -158,6 +159,8 @@ namespace NTech.Auth.Controllers
                 // 'subject' claim which is required
                 //new Claim(OpenIddictConstants.Claims.Subject, result.Principal.Identity.Name),
                 new Claim(OpenIddictConstants.Claims.Subject, result.Principal.GetClaim(ClaimTypes.NameIdentifier)!),
+                new Claim(OpenIddictConstants.Claims.Audience, result.Principal.GetClaim(ClaimTypes.NameIdentifier)!),
+
                 //new Claim("some claim", "some value").SetDestinations(OpenIddictConstants.Destinations.AccessToken),
                 new Claim(OpenIddictConstants.Claims.Name, result.Principal.GetClaim(ClaimTypes.Name)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken),
                 new Claim(OpenIddictConstants.Claims.Email, result.Principal.GetClaim(ClaimTypes.Email)!).SetDestinations(OpenIddictConstants.Destinations.IdentityToken)
@@ -170,10 +173,10 @@ namespace NTech.Auth.Controllers
             // Set requested scopes (this is not done automatically)
             claimsPrincipal.SetScopes(request.GetScopes());
 
-            if (properties.TryGetValue(OpenIddictConstants.Claims.Audience, out var audience))
-            {
-                claimsPrincipal.SetResources(audience.GetString()!);
-            }
+            //if (properties.TryGetValue(OpenIddictConstants.Claims.Audience, out var audience))
+            //{
+            //    claimsPrincipal.SetResources(audience.GetString()!);
+            //}
 
 
             // Signing in with the OpenIddict authentiction scheme trigger OpenIddict to issue a code (which can be exchanged for an access token)
