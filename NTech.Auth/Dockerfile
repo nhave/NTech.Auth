@@ -11,7 +11,18 @@ EXPOSE 8081
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG NUGET_URL
+ARG NUGET_AUTH_TOKEN
+
 WORKDIR /src
+
+RUN dotnet nuget add source \
+    $NUGET_URL \
+    --name github \
+    --username USERNAME \
+    --password $NUGET_AUTH_TOKEN \
+    --store-password-in-clear-text
+
 COPY ["NTech.Auth/NTech.Auth.csproj", "NTech.Auth/"]
 RUN dotnet restore "./NTech.Auth/NTech.Auth.csproj"
 COPY . .

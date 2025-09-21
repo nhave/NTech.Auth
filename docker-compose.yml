@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: NTech.Auth/Dockerfile
+      args:
+        NUGET_URL: "https://nuget.pkg.github.com/nhave/index.json"
+        NUGET_AUTH_TOKEN: ${GITHUB_PAT}
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
